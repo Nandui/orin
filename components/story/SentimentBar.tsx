@@ -1,0 +1,23 @@
+import type { Sentiment } from '@/types';
+
+export function SentimentBar({ sentiment }: { sentiment: Sentiment }) {
+  const pos = Math.max(0, Math.min(100, sentiment.pos));
+  const neg = Math.max(0, Math.min(100, sentiment.neg));
+
+  return (
+    <section className="rounded-xl border border-neutral-800/80 bg-neutral-900/40 p-4">
+      <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-neutral-400">
+        Community Sentiment
+      </h2>
+      <div className="mb-2 flex h-2.5 w-full overflow-hidden rounded-full bg-neutral-800">
+        <div className="h-full bg-green-500" style={{ width: `${pos}%` }} />
+        <div className="h-full bg-rose-500" style={{ width: `${neg}%` }} />
+      </div>
+      <div className="mb-3 flex justify-between text-[11px] font-semibold">
+        <span className="text-green-400">{pos.toFixed(1)}% positive</span>
+        <span className="text-rose-400">{neg.toFixed(1)}% negative</span>
+      </div>
+      <p className="text-sm leading-relaxed text-neutral-300">{sentiment.text}</p>
+    </section>
+  );
+}
