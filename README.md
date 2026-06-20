@@ -41,17 +41,48 @@ adds indexes, the signup trigger, and Row-Level Security policies.
 
 ## Cron jobs
 
-Configured in `vercel.json`:
+The pipeline has four stages, each its own route:
 
-| Path                 | Schedule    | What it does                              |
-| -------------------- | ----------- | ----------------------------------------- |
-| `/api/cron/ingest`   | every 5 min | Crawl RSS sources, insert new stories     |
-| `/api/cron/cluster`  | every 10 min| Keyword-cluster the pending queue (v1)    |
-| `/api/cron/analyze`  | every 10 min| Generate AI overview/analysis/sentiment   |
-| `/api/cron/rank`     | every 5 min | Recompute scores, flush Redis view counts |
+| Path                 | What it does                              |
+| -------------------- | ----------------------------------------- |
+| `/api/cron/ingest`   | Crawl RSS sources, insert new stories     |
+| `/api/cron/cluster`  | Keyword-cluster the pending queue (v1)    |
+| `/api/cron/analyze`  | Generate AI overview/analysis/sentiment   |
+| `/api/cron/rank`     | Recompute scores, flush Redis view counts |
+| `/api/cron/run-all`  | Runs all four above, in order             |
 
 Each route checks `Authorization: Bearer ${CRON_SECRET}` (skipped when
 `CRON_SECRET` is unset, for local dev).
+
+### Scheduling
+
+`vercel.json` ships a **Hobby-friendly** schedule: one daily run of the whole
+pipeline via `/api/cron/run-all` (the Hobby plan only allows once-per-day cron
+jobs):
+
+```json
+{ "crons": [{ "path": "/api/cron/run-all", "schedule": "0 6 * * *" }] }
+```
+
+On **Vercel Pro**, swap that for the spec's high-frequency schedule (drop
+`run-all`, run each stage independently) for much fresher data:
+
+```json
+{
+  "crons": [
+    { "path": "/api/cron/ingest",  "schedule": "*/5 * * * *"  },
+    { "path": "/api/cron/cluster", "schedule": "*/10 * * * *" },
+    { "path": "/api/cron/analyze", "schedule": "*/10 * * * *" },
+    { "path": "/api/cron/rank",    "schedule": "*/5 * * * *"  }
+  ]
+}
+```
+
+You can always trigger a stage manually, regardless of plan:
+
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" https://<deployment>/api/cron/run-all
+```
 
 ## API
 
