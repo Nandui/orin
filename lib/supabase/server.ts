@@ -11,11 +11,21 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 let cached: SupabaseClient | null | undefined;
 
+// The Supabase <-> Vercel integration may expose the project URL under either
+// name, so accept both.
+function supabaseUrl(): string | undefined {
+  return process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL;
+}
+
+function serviceKey(): string | undefined {
+  return process.env.SUPABASE_SERVICE_ROLE_KEY;
+}
+
 export function getServiceClient(): SupabaseClient | null {
   if (cached !== undefined) return cached;
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const url = supabaseUrl();
+  const key = serviceKey();
 
   if (!url || !key) {
     cached = null;
@@ -29,8 +39,5 @@ export function getServiceClient(): SupabaseClient | null {
 }
 
 export function isSupabaseConfigured(): boolean {
-  return Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      process.env.SUPABASE_SERVICE_ROLE_KEY,
-  );
+  return Boolean(supabaseUrl() && serviceKey());
 }
