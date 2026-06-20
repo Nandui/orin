@@ -257,26 +257,95 @@ const SEEDS: Seed[] = [
   },
 ];
 
-function aiFields(seed: Seed): Pick<Story, 'ai_overview' | 'ai_analysis' | 'ai_sentiment'> {
-  if (!seed.ai) return { ai_overview: null, ai_analysis: null, ai_sentiment: null };
+// Rotating analysis angles so each seeded story reads differently while the
+// app is on mock data. Real, per-story analysis comes from Claude (the analyze
+// cron) once Supabase is populated.
+const ANGLES: Array<{ tag: string; title: string; body: (c: string) => string }> = [
+  {
+    tag: 'WHY IT MATTERS',
+    title: 'A shift in momentum',
+    body: (c) =>
+      `This lands at a moment when the ${c} audience is hungry for the next big thing. Early signals point to strong reception across communities.`,
+  },
+  {
+    tag: 'WHAT TO WATCH',
+    title: 'The competitive response',
+    body: (c) =>
+      `Rivals in the ${c} space rarely sit still. Expect counter-announcements and pricing moves within weeks as everyone recalibrates.`,
+  },
+  {
+    tag: 'THE BIG PICTURE',
+    title: 'Platform stakes',
+    body: () =>
+      `Storefronts and console holders have skin in this game. How exclusivity and availability shake out will shape who benefits most.`,
+  },
+  {
+    tag: 'FOR PLAYERS',
+    title: 'What changes for you',
+    body: (c) =>
+      `For day-one ${c} players the practical impact is immediate — wishlists, hardware plans and backlog priorities all shift around this.`,
+  },
+  {
+    tag: 'BUSINESS ANGLE',
+    title: 'A revenue signal',
+    body: (c) =>
+      `Beyond the headline, this is a read on where ${c} spending is heading. Publishers will be watching the monetization and attach-rate numbers closely.`,
+  },
+  {
+    tag: 'COMMUNITY PULSE',
+    title: 'Fan expectations',
+    body: () =>
+      `The fanbase set the bar a long time ago. Whether this clears it — or reignites old debates — will drive the conversation for the next news cycle.`,
+  },
+  {
+    tag: 'TECH TAKE',
+    title: 'Under the hood',
+    body: (c) =>
+      `The technical details matter more than the marketing here. For ${c}, the underlying performance and feature set are what will actually move the needle.`,
+  },
+  {
+    tag: 'WHAT IT MEANS',
+    title: 'Setting the agenda',
+    body: (c) =>
+      `This reframes expectations for the rest of the ${c} slate. Competitors now have to answer it, intentionally or not.`,
+  },
+];
+
+const OVERVIEWS: Array<(s: string, c: string) => string> = [
+  (s, c) => `${s} It's the kind of ${c} story that resets expectations for the months ahead.`,
+  (s, c) => `${s} Coming now, it gives the ${c} scene a clear talking point and a lot to unpack.`,
+  (s, c) => `${s} For the ${c} space, the timing is as notable as the news itself.`,
+  (s, c) => `${s} Industry watchers read it as a signal of where ${c} is heading next.`,
+  (s) => `${s} The reaction has been swift, and the implications run deeper than the headline suggests.`,
+];
+
+const SENTIMENTS: Array<{ pos: number; text: string }> = [
+  { pos: 81.2, text: 'The reaction skews strongly positive, with fans celebrating openly. A vocal minority is urging caution until more is shown.' },
+  { pos: 68.5, text: 'Sentiment is mostly upbeat but measured — excitement tempered by memories of past overpromises. People want to see it deliver.' },
+  { pos: 54.0, text: 'The community is genuinely split. Optimists see a turning point; skeptics see hype that needs proof before they buy in.' },
+  { pos: 73.9, text: 'Broadly positive, with enthusiasm concentrated among the core audience. Casual players are more wait-and-see.' },
+  { pos: 47.3, text: 'A divisive one — frustration is running high in places, though plenty are defending the move. Expect the debate to continue.' },
+];
+
+function aiFields(
+  seed: Seed,
+  i: number,
+): Pick<Story, 'ai_overview' | 'ai_analysis' | 'ai_sentiment'> {
+  // Every seeded story carries analysis so the demo shows the full story UI.
+  const a = ANGLES[i % ANGLES.length];
+  const b = ANGLES[(i + 3) % ANGLES.length];
+  const sentiment = SENTIMENTS[i % SENTIMENTS.length];
+
   return {
-    ai_overview: `${seed.summary} Industry watchers see this as a signal of where the ${seed.category} space is heading over the next year.`,
+    ai_overview: OVERVIEWS[i % OVERVIEWS.length](seed.summary, seed.category),
     ai_analysis: [
-      {
-        tag: 'WHY IT MATTERS',
-        title: 'A shift in momentum',
-        body: 'This lands at a moment when the audience is hungry for the next big thing, and early signals suggest strong reception across communities.',
-      },
-      {
-        tag: 'WHAT TO WATCH',
-        title: 'Knock-on effects',
-        body: 'Expect competitors to respond quickly. The bigger story is how this reshapes expectations for the rest of the slate.',
-      },
+      { tag: a.tag, title: a.title, body: a.body(seed.category) },
+      { tag: b.tag, title: b.title, body: b.body(seed.category) },
     ],
     ai_sentiment: {
-      pos: 72.4,
-      neg: 27.6,
-      text: 'The community reaction skews positive, with enthusiasm tempered by caution about delivery. Skeptics point to past disappointments.',
+      pos: sentiment.pos,
+      neg: Math.round((100 - sentiment.pos) * 10) / 10,
+      text: sentiment.text,
     },
   };
 }
@@ -312,7 +381,7 @@ export const MOCK_STORIES: Story[] = SEEDS.map((seed, i) => {
     rank_delta: seed.delta,
     badges: seed.badges ?? [],
     is_trending: Boolean(seed.trending),
-    ...aiFields(seed),
+    ...aiFields(seed, i),
   };
   return story;
 })
