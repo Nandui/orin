@@ -17,10 +17,13 @@ export async function GET(req: Request) {
   if (!supabase) return json({ ok: false, reason: 'supabase_not_configured' });
 
   // 1. Active sources (fall back to the seed list when the table is empty).
-  const { data: sourceRows } = await supabase
+  const { data: sourceRows, error: sourcesError } = await supabase
     .from('rss_sources')
     .select('id, url, category')
     .eq('is_active', true);
+  if (sourcesError) {
+    console.error('[cron/ingest] rss_sources query error:', sourcesError.message);
+  }
 
   const sources: Array<{ id: string | null; url: string; category: Category }> =
     sourceRows && sourceRows.length
@@ -64,8 +67,12 @@ export async function GET(req: Request) {
         await enqueue(QUEUE_CLUSTER, id);
         await enqueue(QUEUE_ANALYSIS, id);
       }
+    } else if (error) {
+      console.error('[cron/ingest] insert error:', error.message);
     }
   }
+
+  console.log('[cron/ingest] done', { sources: sources.length, inserted });
 
   if (crawledIds.length) {
     await supabase

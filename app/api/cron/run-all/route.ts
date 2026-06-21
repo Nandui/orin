@@ -35,5 +35,6 @@ export async function GET(req: Request) {
     }
   }
 
+  console.log('[cron/run-all] results', JSON.stringify(results));
   return json({ ok: true, ran: STEPS, results });
 }
