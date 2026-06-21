@@ -1,22 +1,23 @@
 import { json, requireCron } from '@/lib/api';
 import { getServiceClient } from '@/lib/supabase/server';
 import { QUEUE_ANALYSIS, dequeue } from '@/lib/redis';
-import { generateStoryAnalysis } from '@/lib/anthropic';
+import { generateStoryAnalysis, isAnalysisConfigured } from '@/lib/analysis';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 // /api/cron/analyze — generate AI overview/analysis/sentiment for queued
-// stories (product spec §7.3). Uses claude-sonnet-4-6 per the spec.
+// stories (product spec §7.3). Uses DeepSeek (deepseek-chat) when configured,
+// else Claude (claude-sonnet-4-6).
 export async function GET(req: Request) {
   const unauthorized = requireCron(req);
   if (unauthorized) return unauthorized;
 
   const supabase = getServiceClient();
   if (!supabase) return json({ ok: false, reason: 'supabase_not_configured' });
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return json({ ok: false, reason: 'anthropic_not_configured' });
+  if (!isAnalysisConfigured()) {
+    return json({ ok: false, reason: 'no_analysis_provider_configured' });
   }
 
   const ids = await dequeue(QUEUE_ANALYSIS, 20);

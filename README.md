@@ -18,7 +18,7 @@ Supabase isn't configured it serves seeded demo stories so the UI renders.
 | Icons        | Lucide React                                       |
 | Database     | Supabase (Postgres + Auth + Realtime)             |
 | Cache/counts | Upstash Redis                                      |
-| AI           | Anthropic Claude API (`claude-sonnet-4-6`)         |
+| AI           | DeepSeek (`deepseek-chat`) or Claude (`claude-sonnet-4-6`) |
 | Ingestion    | Vercel Cron Jobs                                   |
 | Hosting      | Vercel                                             |
 

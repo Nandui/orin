@@ -1,0 +1,145 @@
+import Anthropic from '@anthropic-ai/sdk';
+import type { AnalysisCard, Sentiment, Story } from '@/types';
+
+// Story analysis provider. Prefers DeepSeek (deepseek-chat) when configured,
+// falling back to Anthropic Claude (claude-sonnet-4-6). Both produce the same
+// JSON shape; the data layer treats the AI fields as optional, so a failure
+// here just leaves them null.
+
+const ANTHROPIC_MODEL = 'claude-sonnet-4-6';
+const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-chat';
+const DEEPSEEK_BASE_URL = (
+  process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com'
+).replace(/\/$/, '');
+
+export interface StoryAnalysis {
+  overview: string;
+  analysis: AnalysisCard[];
+  sentiment: Sentiment;
+}
+
+export function isAnalysisConfigured(): boolean {
+  return Boolean(
+    process.env.DEEPSEEK_API_KEY || process.env.ANTHROPIC_API_KEY,
+  );
+}
+
+function buildPrompt(
+  story: Pick<Story, 'title' | 'summary'>,
+  clusterStories: Array<Pick<Story, 'title'>>,
+): string {
+  const others = clusterStories
+    .map((s) => `"${s.title}"`)
+    .filter(Boolean)
+    .join(', ');
+
+  return `You are an editorial AI for SPAWN, a gaming news aggregator.
+
+Story: "${story.title}"
+Summary: "${story.summary ?? ''}"
+Other outlets covering the same story: ${others || '(none)'}
+
+Return ONLY a JSON object (no markdown, no prose) with this exact shape:
+{
+  "overview": "2-3 sentence editorial overview of what this story means for gaming",
+  "analysis": [
+    { "tag": "SHORT LABEL IN CAPS", "title": "Analysis card title", "body": "2-3 sentence analysis" },
+    { "tag": "SHORT LABEL IN CAPS", "title": "Second angle title", "body": "2-3 sentence analysis" }
+  ],
+  "sentiment": {
+    "pos": 75.6,
+    "neg": 24.4,
+    "text": "2 sentence summary of how the gaming community is likely reacting to this"
+  }
+}`;
+}
+
+/** Strip ```json fences and validate the parsed shape. */
+function safeParse(raw: string): StoryAnalysis | null {
+  const cleaned = raw
+    .trim()
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```$/i, '');
+  try {
+    const obj = JSON.parse(cleaned);
+    if (
+      typeof obj?.overview === 'string' &&
+      Array.isArray(obj?.analysis) &&
+      obj?.sentiment &&
+      typeof obj.sentiment.pos === 'number'
+    ) {
+      return obj as StoryAnalysis;
+    }
+  } catch {
+    /* fall through */
+  }
+  return null;
+}
+
+// --- DeepSeek (OpenAI-compatible chat completions + JSON mode) ---
+async function viaDeepSeek(prompt: string): Promise<string | null> {
+  const key = process.env.DEEPSEEK_API_KEY;
+  if (!key) return null;
+  try {
+    const res = await fetch(`${DEEPSEEK_BASE_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${key}`,
+      },
+      body: JSON.stringify({
+        model: DEEPSEEK_MODEL,
+        messages: [{ role: 'user', content: prompt }],
+        response_format: { type: 'json_object' },
+        max_tokens: 1024,
+        temperature: 0.7,
+        stream: false,
+      }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const content = data?.choices?.[0]?.message?.content;
+    return typeof content === 'string' ? content : null;
+  } catch {
+    return null;
+  }
+}
+
+// --- Anthropic Claude (official SDK) ---
+let anthropic: Anthropic | null | undefined;
+function getAnthropic(): Anthropic | null {
+  if (anthropic !== undefined) return anthropic;
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  anthropic = apiKey ? new Anthropic({ apiKey }) : null;
+  return anthropic;
+}
+
+async function viaAnthropic(prompt: string): Promise<string | null> {
+  const client = getAnthropic();
+  if (!client) return null;
+  try {
+    const res = await client.messages.create({
+      model: ANTHROPIC_MODEL,
+      max_tokens: 1024,
+      messages: [{ role: 'user', content: prompt }],
+    });
+    const text = res.content.find((b) => b.type === 'text');
+    return text && text.type === 'text' ? text.text : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Generate an editorial overview, analysis angles, and sentiment for a story.
+ * Returns null when no provider is configured or the output can't be parsed.
+ */
+export async function generateStoryAnalysis(
+  story: Pick<Story, 'title' | 'summary'>,
+  clusterStories: Array<Pick<Story, 'title'>> = [],
+): Promise<StoryAnalysis | null> {
+  if (!isAnalysisConfigured()) return null;
+  const prompt = buildPrompt(story, clusterStories);
+  const raw = (await viaDeepSeek(prompt)) ?? (await viaAnthropic(prompt));
+  return raw ? safeParse(raw) : null;
+}

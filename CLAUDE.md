@@ -46,7 +46,7 @@ lib/
   rss.ts     feed parsing + category detection + seed sources
   ranking.ts decay-weighted score + rank assignment
   redis.ts   view counters + ingestion queues
-  anthropic.ts  story analysis (claude-sonnet-4-6)
+  analysis.ts   story analysis (DeepSeek deepseek-chat, or Claude fallback)
   api.ts     json() + requireCron()
   utils.ts   cn, timeAgo, formatCount, category colours
 types/index.ts   shared domain types
