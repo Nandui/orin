@@ -107,15 +107,26 @@ export async function runCluster(): Promise<StageResult> {
   const supabase = getServiceClient();
   if (!supabase) return { ok: false, reason: 'supabase_not_configured' };
 
+  type Pending = { id: string; title: string; category: string; cluster_id: string | null };
   const ids = await dequeue(QUEUE_CLUSTER, 50);
-  if (!ids.length) {
-    return { ok: true, processed: 0, note: 'queue empty (requires Redis)' };
+  let pending: Pending[] = [];
+  if (ids.length) {
+    const { data } = await supabase
+      .from('stories')
+      .select('id, title, category, cluster_id')
+      .in('id', ids);
+    pending = (data ?? []) as Pending[];
+  } else {
+    // No Redis queue configured — fall back to still-unclustered stories.
+    const { data } = await supabase
+      .from('stories')
+      .select('id, title, category, cluster_id')
+      .is('cluster_id', null)
+      .order('published_at', { ascending: false })
+      .limit(50);
+    pending = (data ?? []) as Pending[];
   }
-
-  const { data: pending } = await supabase
-    .from('stories')
-    .select('id, title, category, cluster_id')
-    .in('id', ids);
+  if (!pending.length) return { ok: true, processed: 0 };
 
   const cutoff = new Date(Date.now() - CLUSTER_WINDOW_MS).toISOString();
   const { data: recentRaw } = await supabase
@@ -133,7 +144,7 @@ export async function runCluster(): Promise<StageResult> {
   let assigned = 0;
   let created = 0;
 
-  for (const story of pending ?? []) {
+  for (const story of pending) {
     if (story.cluster_id) continue;
     const t = topics(String(story.title));
     const match = recent.find(
@@ -163,8 +174,8 @@ export async function runCluster(): Promise<StageResult> {
     }
   }
 
-  console.log('[cluster] done', { processed: pending?.length ?? 0, assigned, created });
-  return { ok: true, processed: pending?.length ?? 0, assigned, created };
+  console.log('[cluster] done', { processed: pending.length, assigned, created });
+  return { ok: true, processed: pending.length, assigned, created };
 }
 
 // --- analyze (product spec §7.3) ---
@@ -175,18 +186,37 @@ export async function runAnalyze(): Promise<StageResult> {
     return { ok: false, reason: 'no_analysis_provider_configured' };
   }
 
-  const ids = await dequeue(QUEUE_ANALYSIS, 20);
-  if (!ids.length) {
-    return { ok: true, processed: 0, note: 'queue empty (requires Redis)' };
-  }
+  type Pending = { id: string; title: string; summary: string | null; cluster_id: string | null };
+  const map = (r: Record<string, unknown>): Pending => ({
+    id: String(r.id),
+    title: String(r.title),
+    summary: (r.summary as string) ?? null,
+    cluster_id: (r.cluster_id as string) ?? null,
+  });
 
-  const { data: stories } = await supabase
-    .from('stories')
-    .select('id, title, summary, cluster_id')
-    .in('id', ids);
+  const ids = await dequeue(QUEUE_ANALYSIS, 15);
+  let stories: Pending[] = [];
+  if (ids.length) {
+    const { data } = await supabase
+      .from('stories')
+      .select('id, title, summary, cluster_id')
+      .in('id', ids);
+    stories = (data ?? []).map(map);
+  } else {
+    // No Redis queue — analyze the newest stories that have no overview yet.
+    const { data } = await supabase
+      .from('stories')
+      .select('id, title, summary, cluster_id')
+      .is('ai_overview', null)
+      .order('published_at', { ascending: false })
+      .limit(15);
+    stories = (data ?? []).map(map);
+  }
+  if (!stories.length) return { ok: true, processed: 0, analyzed: 0 };
 
   let analyzed = 0;
-  for (const story of stories ?? []) {
+  // Run a few DeepSeek calls at a time so the batch fits the function limit.
+  await inChunks(stories, 5, async (story) => {
     let clusterStories: Array<{ title: string }> = [];
     if (story.cluster_id) {
       const { data } = await supabase
@@ -199,7 +229,7 @@ export async function runAnalyze(): Promise<StageResult> {
     }
 
     const result = await generateStoryAnalysis(
-      { title: String(story.title), summary: (story.summary as string) ?? null },
+      { title: story.title, summary: story.summary },
       clusterStories,
     );
     if (result) {
@@ -213,10 +243,10 @@ export async function runAnalyze(): Promise<StageResult> {
         .eq('id', story.id);
       analyzed++;
     }
-  }
+  });
 
-  console.log('[analyze] done', { processed: stories?.length ?? 0, analyzed });
-  return { ok: true, processed: stories?.length ?? 0, analyzed };
+  console.log('[analyze] done', { processed: stories.length, analyzed });
+  return { ok: true, processed: stories.length, analyzed };
 }
 
 // --- rank + flush views (product spec §7.4 / §7.5) ---
