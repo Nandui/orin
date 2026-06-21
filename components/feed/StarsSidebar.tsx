@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Heart, Star } from 'lucide-react';
+import { ArrowBigUp, Star } from 'lucide-react';
 import type { Story } from '@/types';
 import { formatCount } from '@/lib/utils';
 import { CategoryPill } from '@/components/ui/CategoryPill';
@@ -27,7 +27,7 @@ export function StarsSidebar({ stories }: { stories: Story[] }) {
             <div className="flex items-center gap-2 text-[11px] text-neutral-500">
               <CategoryPill category={story.category} />
               <span className="flex items-center gap-1">
-                <Heart className="h-3 w-3" />
+                <ArrowBigUp className="h-3.5 w-3.5" />
                 {formatCount(story.like_count)}
               </span>
             </div>

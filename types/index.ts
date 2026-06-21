@@ -71,6 +71,10 @@ export interface Story {
   rank_today: number | null;
   rank_delta: number;
 
+  // Original discussion (Reddit), where the engagement above comes from.
+  discussion_url: string | null;
+  discussion_source: string | null;
+
   // Presentation.
   badges: Badge[];
   is_trending: boolean;

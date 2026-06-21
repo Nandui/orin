@@ -1,5 +1,11 @@
 import { json } from '@/lib/api';
-import { runAnalyze, runCluster, runIngest, runRank } from '@/lib/pipeline';
+import {
+  runAnalyze,
+  runCluster,
+  runEngagement,
+  runIngest,
+  runRank,
+} from '@/lib/pipeline';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -23,14 +29,20 @@ export async function GET(req: Request) {
     }
   }
 
-  // Sequential: ingest must populate before cluster/analyze/rank act on it.
+  // Sequential: ingest populates, then engagement/cluster/analyze enrich, then
+  // rank (which depends on the refreshed engagement counts).
   const results = {
     ingest: await runIngest(),
     cluster: await runCluster(),
+    engagement: await runEngagement(),
     analyze: await runAnalyze(),
     rank: await runRank(),
   };
 
   console.log('[cron/run-all] results', JSON.stringify(results));
-  return json({ ok: true, ran: ['ingest', 'cluster', 'analyze', 'rank'], results });
+  return json({
+    ok: true,
+    ran: ['ingest', 'cluster', 'engagement', 'analyze', 'rank'],
+    results,
+  });
 }

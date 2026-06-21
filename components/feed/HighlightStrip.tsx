@@ -1,11 +1,11 @@
 import Link from 'next/link';
-import { Clock, Eye, Flame, MessageSquare, TrendingUp } from 'lucide-react';
+import { ArrowBigUp, Clock, Flame, MessageSquare, TrendingUp } from 'lucide-react';
 import type { Highlight, HighlightKind } from '@/types';
 import { formatCount } from '@/lib/utils';
 
 const ICONS: Record<HighlightKind, typeof Flame> = {
   icymi: Clock,
-  most_viewed: Eye,
+  most_viewed: ArrowBigUp,
   most_debated: MessageSquare,
   fastest_climbing: TrendingUp,
 };
@@ -13,7 +13,7 @@ const ICONS: Record<HighlightKind, typeof Flame> = {
 function metricFor(h: Highlight): string {
   switch (h.kind) {
     case 'most_viewed':
-      return `${formatCount(h.story.view_count)} views`;
+      return `${formatCount(h.story.like_count)} upvotes`;
     case 'most_debated':
       return `${formatCount(h.story.comment_count)} comments`;
     case 'fastest_climbing':

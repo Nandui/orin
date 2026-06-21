@@ -381,6 +381,8 @@ export const MOCK_STORIES: Story[] = SEEDS.map((seed, i) => {
     rank_delta: seed.delta,
     badges: seed.badges ?? [],
     is_trending: Boolean(seed.trending),
+    discussion_url: 'https://www.reddit.com/r/Games/',
+    discussion_source: 'reddit',
     ...aiFields(seed, i),
   };
   return story;

@@ -27,17 +27,24 @@ export function isAnalysisConfigured(): boolean {
 function buildPrompt(
   story: Pick<Story, 'title' | 'summary'>,
   clusterStories: Array<Pick<Story, 'title'>>,
+  comments: string[],
 ): string {
   const others = clusterStories
     .map((s) => `"${s.title}"`)
     .filter(Boolean)
     .join(', ');
 
+  const discussion = comments.length
+    ? `\n\nTop comments from the original Reddit discussion (base the sentiment on THESE real reactions, not a guess):\n${comments
+        .map((c, i) => `${i + 1}. ${c}`)
+        .join('\n')}`
+    : '';
+
   return `You are an editorial AI for SPAWN, a gaming news aggregator.
 
 Story: "${story.title}"
 Summary: "${story.summary ?? ''}"
-Other outlets covering the same story: ${others || '(none)'}
+Other outlets covering the same story: ${others || '(none)'}${discussion}
 
 Return ONLY a JSON object (no markdown, no prose) with this exact shape:
 {
@@ -137,9 +144,10 @@ async function viaAnthropic(prompt: string): Promise<string | null> {
 export async function generateStoryAnalysis(
   story: Pick<Story, 'title' | 'summary'>,
   clusterStories: Array<Pick<Story, 'title'>> = [],
+  comments: string[] = [],
 ): Promise<StoryAnalysis | null> {
   if (!isAnalysisConfigured()) return null;
-  const prompt = buildPrompt(story, clusterStories);
+  const prompt = buildPrompt(story, clusterStories, comments);
   const raw = (await viaDeepSeek(prompt)) ?? (await viaAnthropic(prompt));
   return raw ? safeParse(raw) : null;
 }

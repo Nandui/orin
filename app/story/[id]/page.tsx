@@ -1,15 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import {
-  ArrowLeft,
-  Bookmark,
-  Eye,
-  ExternalLink,
-  Heart,
-  MessageSquare,
-  Repeat2,
-} from 'lucide-react';
+import { ArrowBigUp, ArrowLeft, ExternalLink, MessageSquare } from 'lucide-react';
 import { getClusterStories, getStoryById } from '@/lib/stories';
 import { incrementView } from '@/lib/redis';
 import { formatCount, timeAgo } from '@/lib/utils';
@@ -49,14 +41,6 @@ export default async function StoryDetailPage({
   void incrementView(id);
 
   const cluster = await getClusterStories(story.cluster_id, story.id);
-
-  const stats = [
-    { icon: Eye, value: story.view_count, label: 'views' },
-    { icon: Heart, value: story.like_count, label: 'likes' },
-    { icon: MessageSquare, value: story.comment_count, label: 'comments' },
-    { icon: Bookmark, value: story.bookmark_count, label: 'bookmarks' },
-    { icon: Repeat2, value: story.repost_count, label: 'reposts' },
-  ];
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
@@ -100,15 +84,34 @@ export default async function StoryDetailPage({
         ) : null}
 
         <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-400">
-          {stats.map((s) => (
-            <span key={s.label} className="flex items-center gap-1.5">
-              <s.icon className="h-4 w-4" />
+          <span className="flex items-center gap-1.5 font-semibold text-orange-400">
+            <ArrowBigUp className="h-5 w-5" />
+            {formatCount(story.like_count)} upvotes
+          </span>
+          {story.discussion_url ? (
+            <a
+              href={story.discussion_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 hover:text-white"
+            >
+              <MessageSquare className="h-4 w-4" />
               <span className="font-semibold text-neutral-200">
-                {formatCount(s.value)}
+                {formatCount(story.comment_count)}
               </span>
-              {s.label}
+              comments
+              <span className="text-xs text-neutral-600">on Reddit</span>
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          ) : (
+            <span className="flex items-center gap-1.5">
+              <MessageSquare className="h-4 w-4" />
+              <span className="font-semibold text-neutral-200">
+                {formatCount(story.comment_count)}
+              </span>
+              comments
             </span>
-          ))}
+          )}
           <a
             href={story.url}
             target="_blank"
@@ -171,14 +174,30 @@ export default async function StoryDetailPage({
 
       <SpawnDeeper />
 
-      {/* Comments anchor — threaded comments arrive in Phase 2 */}
+      {/* Discussion — engagement lives on the original thread, Digg-style */}
       <section id="comments" className="scroll-mt-20">
         <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-neutral-400">
-          Comments
+          Discussion
         </h2>
-        <div className="rounded-xl border border-dashed border-neutral-800 bg-neutral-900/30 p-6 text-center text-sm text-neutral-500">
-          Threaded comments land in Phase 2 — sign in and join the discussion.
-        </div>
+        {story.discussion_url ? (
+          <a
+            href={story.discussion_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between gap-3 rounded-xl border border-neutral-800/80 bg-neutral-900/40 p-4 hover:border-neutral-700"
+          >
+            <span className="flex items-center gap-2 text-sm font-medium text-neutral-200">
+              <MessageSquare className="h-4 w-4 text-orange-400" />
+              Join the discussion on Reddit —{' '}
+              {formatCount(story.comment_count)} comments
+            </span>
+            <ExternalLink className="h-4 w-4 text-neutral-500" />
+          </a>
+        ) : (
+          <div className="rounded-xl border border-dashed border-neutral-800 bg-neutral-900/30 p-6 text-center text-sm text-neutral-500">
+            No discussion thread found for this story yet.
+          </div>
+        )}
       </section>
     </div>
   );

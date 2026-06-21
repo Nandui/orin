@@ -10,7 +10,7 @@ import type {
 } from '@/types';
 
 const STORY_COLUMNS =
-  'id, cluster_id, title, url, source_domain, summary, image_url, category, published_at, ai_overview, ai_analysis, ai_sentiment, view_count, like_count, bookmark_count, comment_count, repost_count, score, rank_today, rank_delta, badges, is_trending';
+  'id, cluster_id, title, url, source_domain, summary, image_url, category, published_at, ai_overview, ai_analysis, ai_sentiment, view_count, like_count, bookmark_count, comment_count, repost_count, score, rank_today, rank_delta, badges, is_trending, discussion_url, discussion_source';
 
 /** Map a raw DB row to the UI `Story` shape, coercing jsonb/bigint fields. */
 function rowToStory(row: Record<string, unknown>): Story {
@@ -38,6 +38,8 @@ function rowToStory(row: Record<string, unknown>): Story {
     rank_delta: num(row.rank_delta),
     badges: (row.badges as Story['badges']) ?? [],
     is_trending: Boolean(row.is_trending),
+    discussion_url: (row.discussion_url as string) ?? null,
+    discussion_source: (row.discussion_source as string) ?? null,
   };
 }
 
@@ -67,7 +69,7 @@ function sortStories(rows: Story[], sort: StorySort): Story[] {
         new Date(b.published_at).getTime() - new Date(a.published_at).getTime(),
     );
   } else if (sort === 'top') {
-    copy.sort((a, b) => b.view_count - a.view_count);
+    copy.sort((a, b) => b.like_count - a.like_count);
   } else {
     // trending: trending flag first, then score
     copy.sort((a, b) => {
@@ -95,7 +97,7 @@ export async function getStories(query: StoryQuery = {}): Promise<Story[]> {
   }
 
   if (sort === 'new') q = q.order('published_at', { ascending: false });
-  else if (sort === 'top') q = q.order('view_count', { ascending: false });
+  else if (sort === 'top') q = q.order('like_count', { ascending: false });
   else q = q.order('is_trending', { ascending: false }).order('score', { ascending: false });
 
   q = q.range((page - 1) * limit, page * limit - 1);
@@ -147,7 +149,7 @@ export async function getHighlights(): Promise<Highlight[]> {
   const pool = await getStories({ sort: 'trending', period: '7days', limit: 60 });
   if (pool.length === 0) return [];
 
-  const byViews = [...pool].sort((a, b) => b.view_count - a.view_count);
+  const byUpvotes = [...pool].sort((a, b) => b.like_count - a.like_count);
   const byComments = [...pool].sort((a, b) => b.comment_count - a.comment_count);
   const byDelta = [...pool].sort((a, b) => b.rank_delta - a.rank_delta);
   const trending = pool.filter((s) => s.is_trending);
@@ -158,7 +160,7 @@ export async function getHighlights(): Promise<Highlight[]> {
 
   const highlights: Highlight[] = [
     { kind: 'icymi', label: 'ICYMI', story: icymi },
-    { kind: 'most_viewed', label: '#1 Viewed', story: byViews[0] },
+    { kind: 'most_viewed', label: '#1 Upvoted', story: byUpvotes[0] },
     { kind: 'most_debated', label: 'Most Debated', story: byComments[0] },
     { kind: 'fastest_climbing', label: 'Fastest Climbing', story: byDelta[0] },
   ];

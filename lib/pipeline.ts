@@ -9,6 +9,7 @@ import {
 } from '@/lib/redis';
 import { rankStories } from '@/lib/ranking';
 import { generateStoryAnalysis, isAnalysisConfigured } from '@/lib/analysis';
+import { fetchRedditComments, fetchRedditEngagement } from '@/lib/reddit';
 import type { Category } from '@/types';
 
 // The four pipeline stages as in-process functions, so they can be called
@@ -84,6 +85,49 @@ export async function runIngest(): Promise<StageResult> {
 
   console.log('[ingest] done', { sources: sources.length, inserted });
   return { ok: true, sources: sources.length, inserted };
+}
+
+// --- engagement: original discussion stats from Reddit (Digg-style) ---
+export async function runEngagement(): Promise<StageResult> {
+  const supabase = getServiceClient();
+  if (!supabase) return { ok: false, reason: 'supabase_not_configured' };
+
+  type Pending = { id: string; url: string; title: string };
+  const { data } = await supabase
+    .from('stories')
+    .select('id, url, title')
+    .is('discussion_source', null)
+    .order('published_at', { ascending: false })
+    .limit(12);
+  const pending = (data ?? []) as Pending[];
+  if (!pending.length) return { ok: true, processed: 0, matched: 0 };
+
+  let matched = 0;
+  // A few at a time — Reddit rate-limits unauthenticated requests.
+  await inChunks(pending, 3, async (story) => {
+    const hit = await fetchRedditEngagement(story.url, story.title);
+    if (hit) {
+      await supabase
+        .from('stories')
+        .update({
+          like_count: hit.score,
+          comment_count: hit.comments,
+          discussion_url: hit.permalink,
+          discussion_source: 'reddit',
+        })
+        .eq('id', story.id);
+      matched++;
+    } else {
+      // Mark as checked so a thread-less story isn't re-queried every run.
+      await supabase
+        .from('stories')
+        .update({ discussion_source: 'none' })
+        .eq('id', story.id);
+    }
+  });
+
+  console.log('[engagement] done', { processed: pending.length, matched });
+  return { ok: true, processed: pending.length, matched };
 }
 
 // --- cluster v1 keyword grouping (product spec §7.2) ---
@@ -186,12 +230,19 @@ export async function runAnalyze(): Promise<StageResult> {
     return { ok: false, reason: 'no_analysis_provider_configured' };
   }
 
-  type Pending = { id: string; title: string; summary: string | null; cluster_id: string | null };
+  type Pending = {
+    id: string;
+    title: string;
+    summary: string | null;
+    cluster_id: string | null;
+    discussion_url: string | null;
+  };
   const map = (r: Record<string, unknown>): Pending => ({
     id: String(r.id),
     title: String(r.title),
     summary: (r.summary as string) ?? null,
     cluster_id: (r.cluster_id as string) ?? null,
+    discussion_url: (r.discussion_url as string) ?? null,
   });
 
   const ids = await dequeue(QUEUE_ANALYSIS, 15);
@@ -199,14 +250,14 @@ export async function runAnalyze(): Promise<StageResult> {
   if (ids.length) {
     const { data } = await supabase
       .from('stories')
-      .select('id, title, summary, cluster_id')
+      .select('id, title, summary, cluster_id, discussion_url')
       .in('id', ids);
     stories = (data ?? []).map(map);
   } else {
     // No Redis queue — analyze the newest stories that have no overview yet.
     const { data } = await supabase
       .from('stories')
-      .select('id, title, summary, cluster_id')
+      .select('id, title, summary, cluster_id, discussion_url')
       .is('ai_overview', null)
       .order('published_at', { ascending: false })
       .limit(15);
@@ -228,9 +279,14 @@ export async function runAnalyze(): Promise<StageResult> {
       clusterStories = (data ?? []).map((s) => ({ title: String(s.title) }));
     }
 
+    let comments: string[] = [];
+    if (story.discussion_url && story.discussion_url.includes('reddit.com')) {
+      comments = await fetchRedditComments(story.discussion_url);
+    }
     const result = await generateStoryAnalysis(
       { title: story.title, summary: story.summary },
       clusterStories,
+      comments,
     );
     if (result) {
       await supabase

@@ -29,7 +29,7 @@ export function RisingSidebar({ stories }: { stories: Story[] }) {
                 {story.title}
               </Link>
               <div className="mt-1 flex items-center gap-2 text-[11px] text-neutral-500">
-                <span>{formatCount(story.view_count)} views</span>
+                <span>{formatCount(story.like_count)} upvotes</span>
                 <RankDelta delta={story.rank_delta} />
               </div>
             </div>

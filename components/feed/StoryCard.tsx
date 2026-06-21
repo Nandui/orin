@@ -1,22 +1,17 @@
-'use client';
-
-import { useState } from 'react';
 import Link from 'next/link';
 import {
-  Bookmark,
-  Eye,
-  Heart,
-  MessageSquare,
-  Repeat2,
+  ArrowBigUp,
   ExternalLink,
+  MessageSquare,
 } from 'lucide-react';
 import type { Story } from '@/types';
-import { cn, formatCount } from '@/lib/utils';
+import { formatCount } from '@/lib/utils';
 import { CategoryPill } from '@/components/ui/CategoryPill';
 import { RankDelta } from '@/components/ui/RankDelta';
 
-// Numbered feed card (product spec §10 "StoryCard"). Like/bookmark use optimistic
-// local state; persistence to /api/votes lands in Phase 2 with auth.
+// Numbered feed card, Digg/Techmeme style: engagement (upvotes + comments) comes
+// from the original discussion thread, not from SPAWN itself. Read-only, so this
+// is a server component.
 export function StoryCard({
   story,
   rank,
@@ -26,11 +21,7 @@ export function StoryCard({
   rank: number;
   timeLabel: string;
 }) {
-  const [liked, setLiked] = useState(false);
-  const [bookmarked, setBookmarked] = useState(false);
-
-  const likeCount = story.like_count + (liked ? 1 : 0);
-  const bookmarkCount = story.bookmark_count + (bookmarked ? 1 : 0);
+  const hasThread = Boolean(story.discussion_url);
 
   return (
     <article className="group flex gap-3 rounded-xl border border-neutral-800/80 bg-neutral-900/30 p-3 transition-colors hover:border-neutral-700 hover:bg-neutral-900/60 sm:gap-4 sm:p-4">
@@ -84,62 +75,39 @@ export function StoryCard({
           </Link>
         </h3>
 
-        <div className="flex flex-wrap items-center gap-1">
-          <button
-            type="button"
-            onClick={() => setLiked((v) => !v)}
-            className={cn(
-              'flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors',
-              liked
-                ? 'bg-rose-500/15 text-rose-400'
-                : 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200',
-            )}
-            aria-pressed={liked}
-          >
-            <Heart className={cn('h-3.5 w-3.5', liked && 'fill-current')} />
-            {formatCount(likeCount)}
-          </button>
-
-          <Link
-            href={`/story/${story.id}#comments`}
-            className="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-neutral-200"
-          >
-            <MessageSquare className="h-3.5 w-3.5" />
-            {formatCount(story.comment_count)}
-          </Link>
-
-          <button
-            type="button"
-            onClick={() => setBookmarked((v) => !v)}
-            className={cn(
-              'flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors',
-              bookmarked
-                ? 'bg-amber-500/15 text-amber-400'
-                : 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200',
-            )}
-            aria-pressed={bookmarked}
-          >
-            <Bookmark
-              className={cn('h-3.5 w-3.5', bookmarked && 'fill-current')}
-            />
-            {formatCount(bookmarkCount)}
-          </button>
-
-          <span className="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-neutral-500">
-            <Repeat2 className="h-3.5 w-3.5" />
-            {formatCount(story.repost_count)}
+        <div className="flex flex-wrap items-center gap-3 text-xs">
+          {/* Upvotes from the original thread */}
+          <span className="flex items-center gap-1 font-semibold text-orange-400">
+            <ArrowBigUp className="h-4 w-4" />
+            {formatCount(story.like_count)}
           </span>
 
-          <span className="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-neutral-500">
-            <Eye className="h-3.5 w-3.5" />
-            {formatCount(story.view_count)}
-          </span>
+          {/* Comments → the discussion thread */}
+          {hasThread ? (
+            <a
+              href={story.discussion_url!}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 font-medium text-neutral-400 transition-colors hover:text-white"
+            >
+              <MessageSquare className="h-3.5 w-3.5" />
+              {formatCount(story.comment_count)}
+              <span className="text-neutral-600">·</span>
+              <span className="text-neutral-300">Discussion</span>
+              <ExternalLink className="h-3 w-3 text-neutral-600" />
+            </a>
+          ) : (
+            <span className="flex items-center gap-1 font-medium text-neutral-500">
+              <MessageSquare className="h-3.5 w-3.5" />
+              {formatCount(story.comment_count)}
+            </span>
+          )}
 
           <a
             href={story.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="ml-auto flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-neutral-500 transition-colors hover:bg-neutral-800 hover:text-neutral-200"
+            className="ml-auto flex items-center gap-1 font-medium text-neutral-500 transition-colors hover:text-neutral-200"
           >
             <ExternalLink className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Source</span>
