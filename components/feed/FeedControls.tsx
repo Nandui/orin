@@ -21,7 +21,7 @@ function buildHref(params: {
   return qs ? `/?${qs}` : '/';
 }
 
-// Sort tabs + category filter row, driven entirely by query params (no client JS).
+// Sort tabs + category filter row, driven entirely by query params (no JS).
 export function FeedControls({
   sort,
   category,
@@ -33,15 +33,15 @@ export function FeedControls({
 }) {
   return (
     <div className="mb-4 flex flex-col gap-3">
-      <div className="flex items-center gap-1 border-b border-neutral-800 pb-2">
+      <div className="flex items-center gap-1.5 rounded-full bg-[#151517] p-1 ring-1 ring-white/5 sm:w-fit">
         {SORTS.map((s) => (
           <Link
             key={s.value}
             href={buildHref({ sort: s.value, category, q })}
             className={cn(
-              'rounded-md px-3 py-1.5 text-sm font-semibold transition-colors',
+              'flex-1 rounded-full px-4 py-1.5 text-center text-sm font-semibold transition-colors sm:flex-none',
               sort === s.value
-                ? 'bg-neutral-800 text-white'
+                ? 'bg-[#ff2d4d] text-white'
                 : 'text-neutral-400 hover:text-white',
             )}
           >
@@ -54,10 +54,10 @@ export function FeedControls({
         <Link
           href={buildHref({ sort, category: null, q })}
           className={cn(
-            'rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors',
+            'rounded-full px-2.5 py-1 text-xs font-semibold transition-colors',
             category === null
-              ? 'border-neutral-600 bg-neutral-800 text-white'
-              : 'border-neutral-800 text-neutral-400 hover:text-white',
+              ? 'bg-[#252528] text-white ring-1 ring-white/10'
+              : 'text-neutral-500 hover:text-white',
           )}
         >
           All
@@ -70,14 +70,12 @@ export function FeedControls({
               key={cat}
               href={buildHref({ sort, category: cat, q })}
               className={cn(
-                'rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors',
-                active
-                  ? 'text-white'
-                  : 'border-neutral-800 text-neutral-400 hover:text-white',
+                'rounded-full px-2.5 py-1 text-xs font-semibold transition-colors',
+                active ? 'text-white' : 'text-neutral-500 hover:text-white',
               )}
               style={
                 active
-                  ? { borderColor: color, backgroundColor: `${color}22`, color }
+                  ? { backgroundColor: `${color}26`, color }
                   : undefined
               }
             >

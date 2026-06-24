@@ -28,18 +28,12 @@ export async function generateMetadata({
   };
 }
 
-export default async function StoryDetailPage({
-  params,
-}: {
-  params: Params;
-}) {
+export default async function StoryDetailPage({ params }: { params: Params }) {
   const { id } = await params;
   const story = await getStoryById(id);
   if (!story) notFound();
 
-  // Hot-count the view (best-effort; no-op without Redis).
   void incrementView(id);
-
   const cluster = await getClusterStories(story.cluster_id, story.id);
 
   return (
@@ -52,7 +46,6 @@ export default async function StoryDetailPage({
         Back to feed
       </Link>
 
-      {/* Header */}
       <header className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-500">
           <CategoryPill category={story.category} />
@@ -62,18 +55,18 @@ export default async function StoryDetailPage({
           <span aria-hidden>·</span>
           <span>{timeAgo(story.published_at)} ago</span>
           {story.rank_today ? (
-            <span className="ml-auto rounded-md bg-neutral-800 px-2 py-0.5 font-semibold text-neutral-300">
-              #{story.rank_today} today
+            <span className="ml-auto rounded-full bg-[#151517] px-2.5 py-0.5 font-semibold text-neutral-300 ring-1 ring-white/5">
+              #{story.rank_today} trending
             </span>
           ) : null}
         </div>
 
-        <h1 className="text-2xl font-bold leading-tight text-white sm:text-3xl">
+        <h1 className="font-display text-3xl font-bold uppercase leading-tight text-white sm:text-4xl">
           {story.title}
         </h1>
 
         {story.image_url ? (
-          <div className="overflow-hidden rounded-xl border border-neutral-800 bg-neutral-800">
+          <div className="overflow-hidden rounded-2xl bg-neutral-800 ring-1 ring-white/5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={story.image_url}
@@ -84,7 +77,7 @@ export default async function StoryDetailPage({
         ) : null}
 
         <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-400">
-          <span className="flex items-center gap-1.5 font-semibold text-orange-400">
+          <span className="flex items-center gap-1.5 font-semibold text-[#ff2d4d]">
             <ArrowBigUp className="h-5 w-5" />
             {formatCount(story.like_count)} upvotes
           </span>
@@ -116,7 +109,7 @@ export default async function StoryDetailPage({
             href={story.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="ml-auto flex items-center gap-1.5 rounded-lg border border-neutral-700 px-3 py-1.5 text-sm font-semibold text-white hover:border-neutral-500"
+            className="ml-auto flex items-center gap-1.5 rounded-full bg-[#ff2d4d] px-4 py-2 text-sm font-semibold text-white shadow-[0_0_30px_-8px_rgba(255,45,77,0.8)] hover:brightness-110"
           >
             <ExternalLink className="h-4 w-4" />
             Read source
@@ -124,9 +117,8 @@ export default async function StoryDetailPage({
         </div>
       </header>
 
-      {/* AI overview */}
       {story.ai_overview ? (
-        <section className="rounded-xl border border-neutral-800/80 bg-neutral-900/40 p-4">
+        <section className="rounded-2xl bg-[#151517] p-4 ring-1 ring-white/5">
           <h2 className="mb-2 text-xs font-bold uppercase tracking-widest text-neutral-400">
             Overview
           </h2>
@@ -146,7 +138,6 @@ export default async function StoryDetailPage({
 
       {story.ai_sentiment ? <SentimentBar sentiment={story.ai_sentiment} /> : null}
 
-      {/* Cluster: other outlets covering this */}
       {cluster.length > 0 ? (
         <section>
           <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-neutral-400">
@@ -157,7 +148,7 @@ export default async function StoryDetailPage({
               <li key={s.id}>
                 <Link
                   href={`/story/${s.id}`}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-neutral-800/80 bg-neutral-900/40 px-3 py-2 hover:border-neutral-700"
+                  className="flex items-center justify-between gap-3 rounded-xl bg-[#151517] px-3 py-2 ring-1 ring-white/5 hover:ring-white/15"
                 >
                   <span className="line-clamp-1 text-sm font-medium text-neutral-200">
                     {s.title}
@@ -174,7 +165,6 @@ export default async function StoryDetailPage({
 
       <SpawnDeeper />
 
-      {/* Discussion — engagement lives on the original thread, Digg-style */}
       <section id="comments" className="scroll-mt-20">
         <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-neutral-400">
           Discussion
@@ -184,17 +174,17 @@ export default async function StoryDetailPage({
             href={story.discussion_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-between gap-3 rounded-xl border border-neutral-800/80 bg-neutral-900/40 p-4 hover:border-neutral-700"
+            className="flex items-center justify-between gap-3 rounded-2xl bg-[#151517] p-4 ring-1 ring-white/5 hover:ring-white/15"
           >
             <span className="flex items-center gap-2 text-sm font-medium text-neutral-200">
-              <MessageSquare className="h-4 w-4 text-orange-400" />
-              Join the discussion on Reddit —{' '}
-              {formatCount(story.comment_count)} comments
+              <MessageSquare className="h-4 w-4 text-[#ff2d4d]" />
+              Join the discussion on Reddit — {formatCount(story.comment_count)}{' '}
+              comments
             </span>
             <ExternalLink className="h-4 w-4 text-neutral-500" />
           </a>
         ) : (
-          <div className="rounded-xl border border-dashed border-neutral-800 bg-neutral-900/30 p-6 text-center text-sm text-neutral-500">
+          <div className="rounded-2xl bg-[#151517] p-6 text-center text-sm text-neutral-500 ring-1 ring-white/5">
             No discussion thread found for this story yet.
           </div>
         )}

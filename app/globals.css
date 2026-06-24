@@ -4,13 +4,17 @@
   color-scheme: dark;
 }
 
-html,
 body {
-  background: #0a0a0f;
-  color: #e8e8ec;
+  min-height: 100dvh;
+  background: radial-gradient(
+    1200px 760px at 50% -12%,
+    #ededf0 0%,
+    #d6d6db 52%,
+    #c5c5cb 100%
+  );
+  color: #ececee;
   font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
     Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
 }
 
 a {
@@ -18,25 +22,36 @@ a {
   text-decoration: none;
 }
 
-/* Thin custom scrollbar for the dark theme. */
+/* Heavy condensed display face for headings + the brand, RIM-style. */
+.font-display {
+  font-family: 'Oswald', ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.01em;
+}
+
+/* Beveled "HUD" corners. */
+.notch-br {
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% calc(100% - 34px),
+    calc(100% - 34px) 100%,
+    0 100%
+  );
+}
+.notch-tr {
+  clip-path: polygon(0 0, calc(100% - 30px) 0, 100% 30px, 100% 100%, 0 100%);
+}
+
+/* Thin dark scrollbar. */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #2a2a35 transparent;
+  scrollbar-color: #3a3a40 transparent;
 }
 *::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 *::-webkit-scrollbar-thumb {
-  background: #2a2a35;
+  background: #3a3a40;
   border-radius: 9999px;
-}
-
-/* Tiny utility used by the brand pill / sparklines. */
-.spawn-grid-bg {
-  background-image: radial-gradient(
-    rgba(139, 92, 246, 0.08) 1px,
-    transparent 1px
-  );
-  background-size: 22px 22px;
 }

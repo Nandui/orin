@@ -15,8 +15,10 @@ export default function ReleasesPage() {
   return (
     <div className="mx-auto max-w-3xl">
       <div className="mb-5 flex items-center gap-2">
-        <CalendarDays className="h-5 w-5 text-sky-400" />
-        <h1 className="text-xl font-bold text-white">Release calendar</h1>
+        <CalendarDays className="h-5 w-5 text-[#ff2d4d]" />
+        <h1 className="font-display text-2xl font-bold uppercase text-white">
+          Release Calendar
+        </h1>
       </div>
       <p className="mb-5 text-sm text-neutral-400">
         A data-driven release calendar arrives in Phase 3. Here&apos;s a preview
@@ -26,7 +28,7 @@ export default function ReleasesPage() {
         {UPCOMING.map((r) => (
           <li
             key={r.title}
-            className="flex items-center justify-between rounded-lg border border-neutral-800/80 bg-neutral-900/40 px-4 py-3"
+            className="flex items-center justify-between rounded-xl bg-[#151517] px-4 py-3 ring-1 ring-white/5"
           >
             <span className="font-semibold text-neutral-100">{r.title}</span>
             <span className="text-right text-xs text-neutral-500">
