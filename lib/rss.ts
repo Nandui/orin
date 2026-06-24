@@ -58,9 +58,75 @@ type FeedItem = {
   content?: string;
   isoDate?: string;
   pubDate?: string;
+  categories?: Array<string | { _?: string; name?: string }>;
   enclosure?: { url?: string };
   ['media:content']?: { $?: { url?: string } };
 };
+
+// Many gaming feeds mix sponsored posts, affiliate "deals" round-ups and
+// shopping guides in with real news. SPAWN should only carry genuine news —
+// the sole ads on the site are our own <AdSlot>. These patterns drop the rest.
+// Word-boundary anchored so "ideal" / "stealth" / "realm" aren't false hits.
+const AD_TITLE_PATTERNS: RegExp[] = [
+  /\bsponsored\b/i,
+  /\badvertisement\b/i,
+  /\b(in partnership|paid partnership) with\b/i,
+  /\bpromo(?:tion|tional)?\s+code\b/i,
+  /\bdiscount code\b/i,
+  /\bcoupon\b/i,
+  /\b\d{1,3}%\s*(?:off|discount)\b/i,
+  /\bbest\s+(?:deals|gaming deals|prices)\b/i,
+  /\b(?:today'?s|the best)\s+deals\b/i,
+  /\bdeal of the (?:day|week)\b/i,
+  /\b(?:black friday|cyber monday|prime day|amazon prime day)\b/i,
+  /\bgift guide\b/i,
+  /\b(?:save|grab|get)\b.*\b(?:on|at)\b.*\b(?:amazon|walmart|best buy|newegg)\b/i,
+  /\bdeals?\s*[:|-]/i, // "Deals: …", "Deal | …"
+];
+
+// Affiliate / shopping URL paths used by editorial sites for non-news posts.
+const AD_URL_PATTERNS: RegExp[] = [
+  /\/deals?\//i,
+  /\/coupons?\//i,
+  /\/shopping\//i,
+  /\/buying-guides?\//i,
+  /\/best-(?:deals|prices|black-friday)/i,
+  /\/promotions?\//i,
+];
+
+// RSS <category> values some feeds tag promotional items with.
+const AD_CATEGORIES = new Set([
+  'deals',
+  'deal',
+  'shopping',
+  'sponsored',
+  'sponsored content',
+  'sponsored post',
+  'advertisement',
+  'partner content',
+  'coupons',
+  'commerce',
+]);
+
+function categoryLabels(item: FeedItem): string[] {
+  return (item.categories ?? [])
+    .map((c) => (typeof c === 'string' ? c : c?._ ?? c?.name ?? ''))
+    .map((c) => c.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+/** True when an item is an ad / sponsored / affiliate-deal post, not real news. */
+export function isAdvertisement(item: FeedItem): boolean {
+  const title = item.title ?? '';
+  if (AD_TITLE_PATTERNS.some((re) => re.test(title))) return true;
+
+  const link = item.link ?? '';
+  if (AD_URL_PATTERNS.some((re) => re.test(link))) return true;
+
+  if (categoryLabels(item).some((c) => AD_CATEGORIES.has(c))) return true;
+
+  return false;
+}
 
 function extractImage(item: FeedItem): string | null {
   if (item.enclosure?.url) return item.enclosure.url;
@@ -88,6 +154,7 @@ export async function fetchFeed(url: string, fallback: Category): Promise<Parsed
       const link = item.link?.trim();
       const title = item.title?.trim();
       if (!link || !title) continue;
+      if (isAdvertisement(item)) continue; // skip sponsored / affiliate-deal posts
       out.push({
         title,
         url: link,
