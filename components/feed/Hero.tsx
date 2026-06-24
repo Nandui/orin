@@ -1,86 +1,101 @@
 import Link from 'next/link';
-import { ArrowBigUp, ArrowUpRight, MessageSquare } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import type { Story } from '@/types';
-import { formatCount, timeAgo } from '@/lib/utils';
+import { cn, timeAgo } from '@/lib/utils';
 
-// Featured story, RIM-hero style: big condensed title, game art bleeding in from
-// the right, a round CTA, and the original-thread engagement.
-export function Hero({ story }: { story: Story }) {
+// GameVerse-style hero: full-bleed featured art with a glassy text panel bottom
+// -left, plus a floating "latest" list overlaid on the right (stacked below on
+// mobile).
+export function Hero({
+  featured,
+  side,
+}: {
+  featured: Story;
+  side: Story[];
+}) {
   return (
-    <section className="notch-br relative mb-5 min-h-[320px] overflow-hidden rounded-3xl bg-gradient-to-br from-[#3a3a3e] via-[#262629] to-[#161618] sm:min-h-[380px]">
-      {story.image_url ? (
-        <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+    <div className="relative mb-6">
+      <section className="relative h-[440px] overflow-hidden rounded-3xl ring-1 ring-white/5 sm:h-[480px]">
+        {featured.image_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={story.image_url}
+            src={featured.image_url}
             alt=""
-            className="absolute inset-0 h-full w-full object-cover object-right"
+            className="absolute inset-0 h-full w-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#161618] via-[#161618]/85 to-transparent sm:via-[#161618]/55" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#161618]/70 to-transparent" />
-        </>
-      ) : null}
-
-      <div className="relative flex h-full max-w-2xl flex-col p-6 sm:p-9">
-        <div className="mb-3 flex items-center gap-2">
-          <span className="inline-flex items-center bg-black px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white">
-            <span className="mr-2 text-[#ff2d4d]">●</span>
-            {story.category} · {timeAgo(story.published_at)} ago
-          </span>
-          {story.rank_today ? (
-            <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
-              #{story.rank_today} Trending
-            </span>
-          ) : null}
-        </div>
-
-        <h1 className="font-display mb-3 text-3xl font-bold uppercase leading-[0.95] text-white sm:text-5xl">
-          <Link href={`/story/${story.id}`} className="line-clamp-3 hover:text-neutral-200">
-            {story.title}
-          </Link>
-        </h1>
-
-        {story.summary ? (
-          <p className="mb-auto max-w-md text-sm leading-relaxed text-neutral-300 line-clamp-3">
-            {story.summary}
-          </p>
         ) : (
-          <div className="mb-auto" />
+          <div className="absolute inset-0 bg-neutral-800" />
         )}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-[#0a0a0c]/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0c]/70 to-transparent" />
 
-        <div className="mt-6 flex items-center gap-5">
-          <Link
-            href={`/story/${story.id}`}
-            className="font-display flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-full bg-[#ff2d4d] text-center text-sm font-semibold uppercase text-white shadow-[0_0_40px_-6px_rgba(255,45,77,0.8)] transition-transform hover:scale-105 sm:h-24 sm:w-24"
-          >
-            Read
-            <ArrowUpRight className="h-4 w-4" />
-          </Link>
-
-          <div className="flex flex-col gap-1">
-            <span className="flex items-center gap-1.5 text-2xl font-bold text-white">
-              <ArrowBigUp className="h-6 w-6 text-[#ff2d4d]" />
-              {formatCount(story.like_count)}
+        {/* Text panel */}
+        <div className="absolute bottom-5 left-5 right-5 max-w-md rounded-2xl bg-black/40 p-5 backdrop-blur-md sm:bottom-6 sm:left-6 lg:right-auto">
+          <h1 className="mb-2 line-clamp-2 text-xl font-semibold leading-snug text-white sm:text-2xl">
+            <Link href={`/story/${featured.id}`}>{featured.title}</Link>
+          </h1>
+          {featured.summary ? (
+            <p className="mb-4 line-clamp-2 text-sm text-neutral-300">
+              {featured.summary}
+            </p>
+          ) : null}
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-xs text-neutral-400">
+              {featured.source_domain} · {timeAgo(featured.published_at)} ago
             </span>
-            {story.discussion_url ? (
-              <a
-                href={story.discussion_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-xs font-medium text-neutral-300 hover:text-white"
-              >
-                <span className="h-2 w-2 rounded-full bg-green-400" />
-                <MessageSquare className="h-3.5 w-3.5" />
-                {formatCount(story.comment_count)} discussing on Reddit
-              </a>
-            ) : (
-              <span className="text-xs font-medium text-neutral-400">
-                {formatCount(story.comment_count)} comments
-              </span>
-            )}
+            <Link
+              href={`/story/${featured.id}`}
+              aria-label="Read featured story"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#2f6bff] text-white transition hover:brightness-110"
+            >
+              <ArrowRight className="h-5 w-5" />
+            </Link>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/* Latest list — overlaid on desktop, stacked on mobile */}
+      {side.length > 0 ? (
+        <div className="mt-3 flex flex-col gap-2 lg:absolute lg:right-5 lg:top-5 lg:mt-0 lg:w-[330px]">
+          {side.map((s, i) => (
+            <Link
+              key={s.id}
+              href={`/story/${s.id}`}
+              className={cn(
+                'flex gap-3 rounded-2xl p-2.5 ring-1 ring-white/5 backdrop-blur-md transition hover:ring-white/15',
+                i === 0
+                  ? 'border-l-2 border-[#2f6bff] bg-black/55'
+                  : 'bg-black/40 lg:bg-black/35',
+              )}
+            >
+              <span className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-neutral-800">
+                {s.image_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={s.image_url}
+                    alt=""
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
+                ) : null}
+              </span>
+              <div className="min-w-0 flex-1">
+                <h3 className="line-clamp-1 text-sm font-semibold text-white">
+                  {s.title}
+                </h3>
+                {s.summary ? (
+                  <p className="line-clamp-1 text-xs text-neutral-400">
+                    {s.summary}
+                  </p>
+                ) : null}
+                <p className="mt-0.5 text-[11px] text-neutral-500">
+                  {s.source_domain} · {timeAgo(s.published_at)} ago
+                </p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      ) : null}
+    </div>
   );
 }

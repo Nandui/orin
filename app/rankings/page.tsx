@@ -12,10 +12,8 @@ export default async function RankingsPage() {
   return (
     <div className="mx-auto max-w-3xl">
       <div className="mb-5 flex items-center gap-2">
-        <Trophy className="h-5 w-5 text-[#ff2d4d]" />
-        <h1 className="font-display text-2xl font-bold uppercase text-white">
-          Top Stories This Week
-        </h1>
+        <Trophy className="h-5 w-5 text-[#2f6bff]" />
+        <h1 className="text-2xl font-bold text-white">Top stories this week</h1>
       </div>
       <StoryList stories={stories} />
     </div>

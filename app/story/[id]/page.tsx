@@ -55,13 +55,13 @@ export default async function StoryDetailPage({ params }: { params: Params }) {
           <span aria-hidden>·</span>
           <span>{timeAgo(story.published_at)} ago</span>
           {story.rank_today ? (
-            <span className="ml-auto rounded-full bg-[#151517] px-2.5 py-0.5 font-semibold text-neutral-300 ring-1 ring-white/5">
+            <span className="ml-auto rounded-full bg-[#141417] px-2.5 py-0.5 font-semibold text-neutral-300 ring-1 ring-white/5">
               #{story.rank_today} trending
             </span>
           ) : null}
         </div>
 
-        <h1 className="font-display text-3xl font-bold uppercase leading-tight text-white sm:text-4xl">
+        <h1 className="text-3xl font-bold leading-tight text-white sm:text-4xl">
           {story.title}
         </h1>
 
@@ -77,7 +77,7 @@ export default async function StoryDetailPage({ params }: { params: Params }) {
         ) : null}
 
         <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-400">
-          <span className="flex items-center gap-1.5 font-semibold text-[#ff2d4d]">
+          <span className="flex items-center gap-1.5 font-semibold text-[#2f6bff]">
             <ArrowBigUp className="h-5 w-5" />
             {formatCount(story.like_count)} upvotes
           </span>
@@ -109,7 +109,7 @@ export default async function StoryDetailPage({ params }: { params: Params }) {
             href={story.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="ml-auto flex items-center gap-1.5 rounded-full bg-[#ff2d4d] px-4 py-2 text-sm font-semibold text-white shadow-[0_0_30px_-8px_rgba(255,45,77,0.8)] hover:brightness-110"
+            className="ml-auto flex items-center gap-1.5 rounded-full bg-[#2f6bff] px-4 py-2 text-sm font-semibold text-white hover:brightness-110"
           >
             <ExternalLink className="h-4 w-4" />
             Read source
@@ -118,7 +118,7 @@ export default async function StoryDetailPage({ params }: { params: Params }) {
       </header>
 
       {story.ai_overview ? (
-        <section className="rounded-2xl bg-[#151517] p-4 ring-1 ring-white/5">
+        <section className="rounded-2xl bg-[#141417] p-4 ring-1 ring-white/5">
           <h2 className="mb-2 text-xs font-bold uppercase tracking-widest text-neutral-400">
             Overview
           </h2>
@@ -148,7 +148,7 @@ export default async function StoryDetailPage({ params }: { params: Params }) {
               <li key={s.id}>
                 <Link
                   href={`/story/${s.id}`}
-                  className="flex items-center justify-between gap-3 rounded-xl bg-[#151517] px-3 py-2 ring-1 ring-white/5 hover:ring-white/15"
+                  className="flex items-center justify-between gap-3 rounded-xl bg-[#141417] px-3 py-2 ring-1 ring-white/5 hover:ring-white/15"
                 >
                   <span className="line-clamp-1 text-sm font-medium text-neutral-200">
                     {s.title}
@@ -174,17 +174,17 @@ export default async function StoryDetailPage({ params }: { params: Params }) {
             href={story.discussion_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-between gap-3 rounded-2xl bg-[#151517] p-4 ring-1 ring-white/5 hover:ring-white/15"
+            className="flex items-center justify-between gap-3 rounded-2xl bg-[#141417] p-4 ring-1 ring-white/5 hover:ring-white/15"
           >
             <span className="flex items-center gap-2 text-sm font-medium text-neutral-200">
-              <MessageSquare className="h-4 w-4 text-[#ff2d4d]" />
+              <MessageSquare className="h-4 w-4 text-[#2f6bff]" />
               Join the discussion on Reddit — {formatCount(story.comment_count)}{' '}
               comments
             </span>
             <ExternalLink className="h-4 w-4 text-neutral-500" />
           </a>
         ) : (
-          <div className="rounded-2xl bg-[#151517] p-6 text-center text-sm text-neutral-500 ring-1 ring-white/5">
+          <div className="rounded-2xl bg-[#141417] p-6 text-center text-sm text-neutral-500 ring-1 ring-white/5">
             No discussion thread found for this story yet.
           </div>
         )}

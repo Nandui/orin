@@ -4,9 +4,9 @@ import { Sparkles } from 'lucide-react';
 // feature) land in Phase 2; Phase 1 ships the prompt surface.
 export function SpawnDeeper() {
   return (
-    <section className="rounded-2xl bg-[#151517] p-4 ring-1 ring-white/5">
+    <section className="rounded-2xl bg-[#141417] p-4 ring-1 ring-white/5">
       <div className="mb-3 flex items-center gap-2">
-        <Sparkles className="h-4 w-4 text-[#ff2d4d]" />
+        <Sparkles className="h-4 w-4 text-[#2f6bff]" />
         <h2 className="text-xs font-bold uppercase tracking-widest text-neutral-400">
           Spawn Deeper
         </h2>

@@ -33,7 +33,7 @@ export function FeedControls({
 }) {
   return (
     <div className="mb-4 flex flex-col gap-3">
-      <div className="flex items-center gap-1.5 rounded-full bg-[#151517] p-1 ring-1 ring-white/5 sm:w-fit">
+      <div className="flex items-center gap-1.5 rounded-full bg-[#141417] p-1 ring-1 ring-white/5 sm:w-fit">
         {SORTS.map((s) => (
           <Link
             key={s.value}
@@ -41,7 +41,7 @@ export function FeedControls({
             className={cn(
               'flex-1 rounded-full px-4 py-1.5 text-center text-sm font-semibold transition-colors sm:flex-none',
               sort === s.value
-                ? 'bg-[#ff2d4d] text-white'
+                ? 'bg-[#2f6bff] text-white'
                 : 'text-neutral-400 hover:text-white',
             )}
           >
@@ -56,7 +56,7 @@ export function FeedControls({
           className={cn(
             'rounded-full px-2.5 py-1 text-xs font-semibold transition-colors',
             category === null
-              ? 'bg-[#252528] text-white ring-1 ring-white/10'
+              ? 'bg-white/10 text-white'
               : 'text-neutral-500 hover:text-white',
           )}
         >

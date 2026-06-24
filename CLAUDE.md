@@ -35,8 +35,8 @@ app/
     cron/ingest|cluster|analyze|rank/route.ts
     webhooks/stripe/route.ts
 components/
-  layout/    TopBar, Sidebar, MobileNav, AdSlot   (RIM-style dark dashboard shell)
-  feed/      Hero, StoryCard, StoryList, RisingCard, FeedControls
+  layout/    TopNav, AdSlot   (GameVerse-style full-bleed dark, top nav)
+  feed/      Hero, StoryTile, StoryCard, StoryList, Panel, FeedControls
   story/     AnalysisCards, SentimentBar, SpawnDeeper
   ui/        CategoryPill, RankDelta
 lib/
