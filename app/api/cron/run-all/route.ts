@@ -1,6 +1,7 @@
 import { json } from '@/lib/api';
 import {
   runAnalyze,
+  runCleanupAds,
   runCluster,
   runEngagement,
   runIngest,
@@ -32,6 +33,7 @@ export async function GET(req: Request) {
   // Sequential: ingest populates, then engagement/cluster/analyze enrich, then
   // rank (which depends on the refreshed engagement counts).
   const results = {
+    cleanupAds: await runCleanupAds(),
     ingest: await runIngest(),
     cluster: await runCluster(),
     engagement: await runEngagement(),
@@ -42,7 +44,7 @@ export async function GET(req: Request) {
   console.log('[cron/run-all] results', JSON.stringify(results));
   return json({
     ok: true,
-    ran: ['ingest', 'cluster', 'engagement', 'analyze', 'rank'],
+    ran: ['cleanupAds', 'ingest', 'cluster', 'engagement', 'analyze', 'rank'],
     results,
   });
 }

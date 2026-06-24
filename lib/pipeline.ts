@@ -1,5 +1,5 @@
 import { getServiceClient } from '@/lib/supabase/server';
-import { SEED_SOURCES, detectCategory, fetchFeed } from '@/lib/rss';
+import { SEED_SOURCES, detectCategory, fetchFeed, isAdContent } from '@/lib/rss';
 import {
   QUEUE_ANALYSIS,
   QUEUE_CLUSTER,
@@ -17,6 +17,33 @@ import type { Category } from '@/types';
 // making internal HTTP requests (which Vercel rejects with 401).
 
 export type StageResult = Record<string, unknown>;
+
+// --- cleanup: purge ad / sponsored / deal rows already in the DB ---
+// The ingest filter keeps new ads out; this removes any that were stored before
+// the filter existed (or that an older title/URL only revealed as an ad later).
+// FKs to stories are ON DELETE CASCADE, so dependent rows go with them.
+export async function runCleanupAds(): Promise<StageResult> {
+  const supabase = getServiceClient();
+  if (!supabase) return { ok: false, reason: 'supabase_not_configured' };
+
+  const { data } = await supabase.from('stories').select('id, title, url').limit(5000);
+  const rows = (data ?? []) as Array<{ id: string; title: string; url: string }>;
+  const adIds = rows
+    .filter((r) => isAdContent(String(r.title ?? ''), String(r.url ?? '')))
+    .map((r) => String(r.id));
+  if (!adIds.length) return { ok: true, scanned: rows.length, removed: 0 };
+
+  let removed = 0;
+  for (let i = 0; i < adIds.length; i += 100) {
+    const chunk = adIds.slice(i, i + 100);
+    const { error } = await supabase.from('stories').delete().in('id', chunk);
+    if (!error) removed += chunk.length;
+    else console.error('[cleanup-ads] delete error:', error.message);
+  }
+
+  console.log('[cleanup-ads] done', { scanned: rows.length, removed });
+  return { ok: true, scanned: rows.length, removed };
+}
 
 // --- ingest (product spec §7.1) ---
 export async function runIngest(): Promise<StageResult> {

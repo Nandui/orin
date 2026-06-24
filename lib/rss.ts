@@ -115,16 +115,20 @@ function categoryLabels(item: FeedItem): string[] {
     .filter(Boolean);
 }
 
+/**
+ * Title/URL ad check. Works off the two fields we persist on a story, so it can
+ * be reused to purge ad rows already in the database (not just incoming items).
+ */
+export function isAdContent(title: string, url: string): boolean {
+  if (AD_TITLE_PATTERNS.some((re) => re.test(title))) return true;
+  if (AD_URL_PATTERNS.some((re) => re.test(url))) return true;
+  return false;
+}
+
 /** True when an item is an ad / sponsored / affiliate-deal post, not real news. */
 export function isAdvertisement(item: FeedItem): boolean {
-  const title = item.title ?? '';
-  if (AD_TITLE_PATTERNS.some((re) => re.test(title))) return true;
-
-  const link = item.link ?? '';
-  if (AD_URL_PATTERNS.some((re) => re.test(link))) return true;
-
+  if (isAdContent(item.title ?? '', item.link ?? '')) return true;
   if (categoryLabels(item).some((c) => AD_CATEGORIES.has(c))) return true;
-
   return false;
 }
 
