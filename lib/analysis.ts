@@ -137,6 +137,61 @@ async function viaAnthropic(prompt: string): Promise<string | null> {
   }
 }
 
+// --- DeepSeek free-form text (no JSON mode), for the Spawn Deeper Q&A ---
+async function viaDeepSeekText(prompt: string): Promise<string | null> {
+  const key = process.env.DEEPSEEK_API_KEY;
+  if (!key) return null;
+  try {
+    const res = await fetch(`${DEEPSEEK_BASE_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${key}`,
+      },
+      body: JSON.stringify({
+        model: DEEPSEEK_MODEL,
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 400,
+        temperature: 0.6,
+        stream: false,
+      }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const content = data?.choices?.[0]?.message?.content;
+    return typeof content === 'string' ? content : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Answer a reader's free-form question about a story (the "Spawn Deeper" widget),
+ * grounded in the story's title/summary/overview. Returns null if no provider is
+ * configured or the call fails.
+ */
+export async function answerStoryQuestion(
+  story: { title: string; summary: string | null; overview: string | null },
+  question: string,
+): Promise<string | null> {
+  if (!isAnalysisConfigured()) return null;
+  const q = question.trim().slice(0, 300);
+  if (!q) return null;
+
+  const prompt = `You are SPAWN's gaming editorial assistant. Answer the reader's question about this news story in 2-4 concise sentences, grounded in the context below. If the answer isn't in the context, reason from general gaming knowledge but stay factual and avoid making up specifics.
+
+Story: "${story.title}"
+Summary: "${story.summary ?? ''}"
+${story.overview ? `Editorial overview: "${story.overview}"` : ''}
+
+Reader's question: ${q}
+
+Answer:`;
+
+  const raw = (await viaDeepSeekText(prompt)) ?? (await viaAnthropic(prompt));
+  return raw ? raw.trim() : null;
+}
+
 /**
  * Generate an editorial overview, analysis angles, and sentiment for a story.
  * Returns null when no provider is configured or the output can't be parsed.

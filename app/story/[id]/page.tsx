@@ -160,7 +160,7 @@ export default async function StoryDetailPage({ params }: { params: Params }) {
             </section>
           ) : null}
 
-          <SpawnDeeper />
+          <SpawnDeeper storyId={story.id} />
         </article>
       </main>
     </div>
