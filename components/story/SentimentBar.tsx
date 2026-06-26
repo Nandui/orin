@@ -6,9 +6,9 @@ export function SentimentBar({ sentiment }: { sentiment: Sentiment }) {
 
   return (
     <section className="rounded-2xl bg-[#16181c] p-4 ring-1 ring-white/5">
-      <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-[var(--accent)]">
+      <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-[var(--accent)]">
         Community Sentiment
-      </h2>
+      </h3>
       <div className="mb-2 flex h-2.5 w-full overflow-hidden rounded-full bg-neutral-800">
         <div className="h-full bg-green-500" style={{ width: `${pos}%` }} />
         <div className="h-full bg-[#ef4444]" style={{ width: `${neg}%` }} />

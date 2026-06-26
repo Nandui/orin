@@ -12,24 +12,28 @@ import {
   MoreHorizontal,
   Share2,
 } from 'lucide-react';
-import { formatCount } from '@/lib/utils';
+import { cn, formatCount } from '@/lib/utils';
 
-// The feed item's action row. Every control does something real: open the
+// The feed/detail item's action row. Every control does something real: open the
 // story, share/copy a link (Web Share API with a clipboard fallback), open the
-// original source, and a read-only view count.
+// original source, and a read-only view count. `focal` renders the larger scale
+// used on the story detail page.
 export function PostActions({
   storyId,
   title,
   sourceUrl,
   views,
+  focal = false,
 }: {
   storyId: string;
   title: string;
   sourceUrl: string;
   views: number;
+  focal?: boolean;
 }) {
   const [copied, setCopied] = useState(false);
   const detail = `/story/${storyId}`;
+  const icon = focal ? 'h-5 w-5' : 'h-[18px] w-[18px]';
 
   function permalink() {
     return typeof window !== 'undefined'
@@ -61,28 +65,33 @@ export function PostActions({
   }
 
   const btn =
-    'flex items-center gap-1.5 rounded-full p-2 text-neutral-500 transition-colors';
+    'flex items-center rounded-full p-2.5 sm:p-2 text-neutral-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-black';
 
   return (
-    <div className="mt-2 flex max-w-md items-center justify-between text-neutral-500">
+    <div
+      className={cn(
+        'relative z-10 mt-2 flex items-center text-neutral-500',
+        focal ? 'gap-2' : 'max-w-md gap-1',
+      )}
+    >
       <Link
         href={detail}
         aria-label="Open story and analysis"
         className={`${btn} hover:bg-[var(--accent)]/10 hover:text-[var(--accent)]`}
       >
-        <MessageSquare className="h-[18px] w-[18px]" />
+        <MessageSquare className={icon} />
       </Link>
 
       <button
         type="button"
         onClick={share}
-        aria-label="Share"
+        aria-label={copied ? 'Link copied' : 'Share'}
         className={`${btn} hover:bg-[var(--accent)]/10 hover:text-[var(--accent)]`}
       >
         {copied ? (
-          <Check className="h-[18px] w-[18px] text-green-400" />
+          <Check className={`${icon} text-green-400`} />
         ) : (
-          <Share2 className="h-[18px] w-[18px]" />
+          <Share2 className={icon} />
         )}
       </button>
 
@@ -93,24 +102,22 @@ export function PostActions({
         aria-label="Read at source"
         className={`${btn} hover:bg-green-500/10 hover:text-green-400`}
       >
-        <ExternalLink className="h-[18px] w-[18px]" />
+        <ExternalLink className={icon} />
       </a>
 
       {views > 0 ? (
-        <span className="flex items-center gap-1.5 px-2 text-[13px]">
-          <Eye className="h-[18px] w-[18px]" />
+        <span className="flex items-center gap-1.5 p-2 text-[13px]">
+          <Eye className={icon} />
           {formatCount(views)}
         </span>
-      ) : (
-        <span />
-      )}
+      ) : null}
 
       <Menu.Root>
         <Menu.Trigger
           aria-label="More"
-          className={`${btn} hover:bg-[var(--accent)]/10 hover:text-[var(--accent)]`}
+          className={`${btn} ml-auto hover:bg-white/5 hover:text-neutral-300`}
         >
-          <MoreHorizontal className="h-[18px] w-[18px]" />
+          <MoreHorizontal className={icon} />
         </Menu.Trigger>
         <Menu.Portal>
           <Menu.Positioner sideOffset={6} align="end" className="z-50">
@@ -131,6 +138,11 @@ export function PostActions({
           </Menu.Positioner>
         </Menu.Portal>
       </Menu.Root>
+
+      {/* Announce copy success to assistive tech. */}
+      <span className="sr-only" aria-live="polite">
+        {copied ? 'Link copied' : ''}
+      </span>
     </div>
   );
 }

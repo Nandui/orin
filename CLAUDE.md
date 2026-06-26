@@ -45,11 +45,14 @@ app/
     webhooks/stripe/route.ts
 components/
   layout/    SideNav (left rail + mobile bars), AdSlot
-  feed/      PostCard, PostActions, FeedTabs, FeedControls, StoryList, RightRail
-  story/     AnalysisCards, SentimentBar, SpawnDeeper
+  feed/      PostCard, PostActions, FeedTabs, FeedControls, StoryList,
+             RightRail, EmptyState, FeedSkeleton
+  story/     AnalysisCards, SentimentBar, SpawnDeeper, BackButton
   ui/        CategoryPill, RankDelta
+app/(loading).tsx  route-level skeletons (home/rankings/esports/story)
 lib/
   supabase/  server.ts (service role), client.ts (browser)
+  sorts.ts   shared feed-sort list (label parity across tabs + controls)
   stories.ts data access (DB or mock)
   mock.ts    seeded demo stories
   rss.ts     feed parsing + category detection + seed sources

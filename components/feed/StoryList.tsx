@@ -1,8 +1,9 @@
 import type { Story } from '@/types';
 import { PostCard } from '@/components/feed/PostCard';
+import { EmptyState } from '@/components/feed/EmptyState';
 
-// Feed list used by the section pages (rankings, esports, search). `ranked`
-// shows a position number on each post.
+// Feed list used by the section pages (rankings, esports). `ranked` shows a
+// position number on each post.
 export function StoryList({
   stories,
   ranked = false,
@@ -12,12 +13,10 @@ export function StoryList({
 }) {
   if (stories.length === 0) {
     return (
-      <div className="px-4 py-16 text-center">
-        <p className="text-lg font-bold text-white">Nothing here yet</p>
-        <p className="muted mt-1 text-sm">
-          The ingestion job will fill this in shortly.
-        </p>
-      </div>
+      <EmptyState
+        title="Nothing here yet"
+        message="Check back soon for the latest."
+      />
     );
   }
 

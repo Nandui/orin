@@ -4,9 +4,9 @@ export function AnalysisCards({ cards }: { cards: AnalysisCard[] }) {
   if (!cards.length) return null;
   return (
     <section>
-      <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-[var(--accent)]">
+      <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-[var(--accent)]">
         Analysis
-      </h2>
+      </h3>
       <div className="grid gap-3 sm:grid-cols-2">
         {cards.map((card, i) => (
           <div

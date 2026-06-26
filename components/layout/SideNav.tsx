@@ -49,13 +49,18 @@ export function SideNav() {
               <Link
                 key={href}
                 href={href}
+                title={label}
+                aria-label={label}
+                aria-current={active ? 'page' : undefined}
                 className={cn(
                   'flex items-center gap-4 rounded-full px-3 py-2.5 text-lg transition-colors hover:bg-white/5 xl:px-4',
-                  active ? 'font-bold text-white' : 'font-medium text-neutral-300',
+                  active
+                    ? 'bg-white/10 font-bold text-white'
+                    : 'font-medium text-neutral-300',
                 )}
               >
                 <Icon
-                  className={cn('h-6 w-6 shrink-0', active && 'text-[var(--accent)]')}
+                  className="h-6 w-6 shrink-0 text-current"
                   strokeWidth={active ? 2.5 : 2}
                 />
                 <span className="hidden xl:inline">{label}</span>
@@ -63,13 +68,21 @@ export function SideNav() {
             );
           })}
         </nav>
+
+        {/* Bottom anchor so the full-height rail reads as a complete unit. */}
+        <div className="mt-auto px-3 text-[11px] leading-relaxed text-neutral-600 xl:px-4">
+          <p className="hidden xl:block">
+            SPAWN — gaming news as it happens.
+          </p>
+          <p className="hidden xl:block">© 2026</p>
+        </div>
       </aside>
 
       {/* Mobile top bar */}
-      <header className="fixed inset-x-0 top-0 z-40 flex h-14 items-center gap-3 border-b border-[var(--line)] bg-black/85 px-4 backdrop-blur lg:hidden">
+      <header className="fixed inset-x-0 top-0 z-40 flex h-[calc(3.5rem_+_env(safe-area-inset-top))] items-center gap-3 border-b border-[var(--line)] bg-[var(--header-bg)] px-4 pt-[env(safe-area-inset-top)] backdrop-blur lg:hidden">
         <Logo />
         <form action="/" method="get" className="ml-auto flex-1 sm:max-w-xs">
-          <div className="flex items-center gap-2 rounded-full bg-[#16181c] px-3 py-1.5">
+          <div className="flex items-center gap-2 rounded-full bg-[#16181c] px-3 py-1.5 ring-1 ring-transparent focus-within:ring-[var(--accent)]">
             <Search className="h-4 w-4 text-neutral-500" />
             <input
               name="q"
@@ -81,7 +94,7 @@ export function SideNav() {
       </header>
 
       {/* Mobile bottom tab bar */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-around border-t border-[var(--line)] bg-black/90 backdrop-blur lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around border-t border-[var(--line)] bg-[var(--header-bg)] pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
         {NAV.map(({ href, label, icon: Icon }) => {
           const active = isActive(pathname, href);
           return (
@@ -89,15 +102,21 @@ export function SideNav() {
               key={href}
               href={href}
               aria-label={label}
-              className="flex flex-1 flex-col items-center gap-0.5 py-2.5"
+              aria-current={active ? 'page' : undefined}
+              className="flex flex-1 flex-col items-center gap-0.5 py-2"
             >
               <Icon
-                className={cn(
-                  'h-6 w-6',
-                  active ? 'text-[var(--accent)]' : 'text-neutral-400',
-                )}
+                className={cn('h-6 w-6', active ? 'text-white' : 'text-neutral-500')}
                 strokeWidth={active ? 2.5 : 2}
               />
+              <span
+                className={cn(
+                  'text-[10px] leading-none',
+                  active ? 'font-semibold text-white' : 'text-neutral-500',
+                )}
+              >
+                {label}
+              </span>
             </Link>
           );
         })}

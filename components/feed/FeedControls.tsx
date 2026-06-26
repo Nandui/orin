@@ -2,12 +2,6 @@ import Link from 'next/link';
 import { CATEGORIES, type Category, type StorySort } from '@/types';
 import { cn, categoryColor } from '@/lib/utils';
 
-const SORTS: { label: string; value: StorySort }[] = [
-  { label: 'Trending', value: 'trending' },
-  { label: 'New', value: 'new' },
-  { label: 'Top', value: 'top' },
-];
-
 function buildHref(params: {
   sort?: StorySort;
   category?: Category | null;
@@ -21,7 +15,8 @@ function buildHref(params: {
   return qs ? `/?${qs}` : '/';
 }
 
-// Sort tabs + category filter row, driven entirely by query params (no JS).
+// Category filter row (chips). Sort is handled by the shared FeedTabs; this is
+// purely topic filtering, preserving the current sort + query.
 export function FeedControls({
   sort,
   category,
@@ -32,58 +27,35 @@ export function FeedControls({
   q?: string;
 }) {
   return (
-    <div className="mb-4 flex flex-col gap-3">
-      <div className="flex items-center gap-1.5 rounded-full bg-[#16181c] p-1 ring-1 ring-white/5 sm:w-fit">
-        {SORTS.map((s) => (
+    <div className="flex gap-1.5 overflow-x-auto px-4 py-2">
+      <Link
+        href={buildHref({ sort, category: null, q })}
+        className={cn(
+          'shrink-0 rounded-full px-3 py-1 text-sm font-semibold transition-colors',
+          category === null
+            ? 'bg-white/10 text-white'
+            : 'text-neutral-400 hover:bg-white/5 hover:text-white',
+        )}
+      >
+        All
+      </Link>
+      {CATEGORIES.map((cat) => {
+        const active = category === cat;
+        const color = categoryColor(cat);
+        return (
           <Link
-            key={s.value}
-            href={buildHref({ sort: s.value, category, q })}
+            key={cat}
+            href={buildHref({ sort, category: cat, q })}
             className={cn(
-              'flex-1 rounded-full px-4 py-1.5 text-center text-sm font-semibold transition-colors sm:flex-none',
-              sort === s.value
-                ? 'bg-[var(--accent)] text-white'
-                : 'text-neutral-400 hover:text-white',
+              'shrink-0 rounded-full px-3 py-1 text-sm font-semibold transition-colors',
+              active ? '' : 'text-neutral-400 hover:bg-white/5 hover:text-white',
             )}
+            style={active ? { backgroundColor: `${color}26`, color } : undefined}
           >
-            {s.label}
+            {cat}
           </Link>
-        ))}
-      </div>
-
-      <div className="flex flex-wrap items-center gap-1.5">
-        <Link
-          href={buildHref({ sort, category: null, q })}
-          className={cn(
-            'rounded-full px-2.5 py-1 text-xs font-semibold transition-colors',
-            category === null
-              ? 'bg-white/10 text-white'
-              : 'text-neutral-500 hover:text-white',
-          )}
-        >
-          All
-        </Link>
-        {CATEGORIES.map((cat) => {
-          const active = category === cat;
-          const color = categoryColor(cat);
-          return (
-            <Link
-              key={cat}
-              href={buildHref({ sort, category: cat, q })}
-              className={cn(
-                'rounded-full px-2.5 py-1 text-xs font-semibold transition-colors',
-                active ? 'text-white' : 'text-neutral-500 hover:text-white',
-              )}
-              style={
-                active
-                  ? { backgroundColor: `${color}26`, color }
-                  : undefined
-              }
-            >
-              {cat}
-            </Link>
-          );
-        })}
-      </div>
+        );
+      })}
     </div>
   );
 }

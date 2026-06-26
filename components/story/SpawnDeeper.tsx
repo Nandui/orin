@@ -27,9 +27,9 @@ export function SpawnDeeper({ storyId }: { storyId: string }) {
     <section className="rounded-2xl bg-[#16181c] p-4 ring-1 ring-white/5">
       <div className="mb-3 flex items-center gap-2">
         <Sparkles className="h-4 w-4 text-[var(--accent)]" />
-        <h2 className="text-sm font-bold uppercase tracking-wide text-[var(--accent)]">
+        <h3 className="text-sm font-bold uppercase tracking-wide text-[var(--accent)]">
           Spawn Deeper
-        </h2>
+        </h3>
       </div>
       <p className="mb-3 text-sm text-neutral-400">
         Ask anything about this story and get an AI answer grounded in the

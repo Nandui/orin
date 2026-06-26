@@ -1,20 +1,28 @@
 import Link from 'next/link';
 import { Avatar } from '@base-ui-components/react/avatar';
 import type { Story } from '@/types';
-import { categoryColor, timeAgo } from '@/lib/utils';
+import { timeAgo } from '@/lib/utils';
+import { CategoryPill } from '@/components/ui/CategoryPill';
 import { PostActions } from '@/components/feed/PostActions';
 
-// A single feed item, styled like an X/Reddit post: source avatar, a header line
-// (source · category · time), the headline + excerpt linking to the story, an
-// optional image, and a functional action row.
+// A single feed item, styled like an X/Reddit post. The whole card is one click
+// target (an absolute overlay link to the story); the action row is raised above
+// it so its controls stay independently clickable.
 export function PostCard({ story, rank }: { story: Story; rank?: number }) {
   const favicon = `https://www.google.com/s2/favicons?domain=${story.source_domain}&sz=64`;
   const detail = `/story/${story.id}`;
 
   return (
-    <article className="border-b border-[var(--line)] px-4 py-3 transition-colors hover:bg-white/[0.03]">
+    <article className="relative border-b border-[var(--line)] px-4 py-3 transition-colors hover:bg-white/[0.03]">
+      {/* Whole-card overlay link — click anywhere opens the story. */}
+      <Link
+        href={detail}
+        aria-label={story.title}
+        className="absolute inset-0 focus-visible:rounded-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--accent)]"
+      />
+
       <div className="flex gap-3">
-        <Avatar.Root className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-[#16181c] ring-1 ring-white/10">
+        <Avatar.Root className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-[#16181c] ring-1 ring-white/10">
           <Avatar.Image
             src={favicon}
             width={40}
@@ -36,31 +44,24 @@ export function PostCard({ story, rank }: { story: Story; rank?: number }) {
             <span className="truncate font-bold text-white">
               {story.source_domain}
             </span>
-            <span
-              className="shrink-0 text-[11px] font-bold uppercase tracking-wide"
-              style={{ color: categoryColor(story.category) }}
-            >
-              {story.category}
+            <span className="shrink-0">
+              <CategoryPill category={story.category} />
             </span>
             <span className="muted shrink-0">·</span>
-            <Link href={detail} className="muted shrink-0 hover:underline">
-              {timeAgo(story.published_at)}
-            </Link>
+            <span className="muted shrink-0">{timeAgo(story.published_at)}</span>
           </div>
 
-          <Link href={detail} className="group block">
-            <h2 className="mt-0.5 text-[15px] font-semibold leading-snug text-white">
-              {story.title}
-            </h2>
-            {story.summary ? (
-              <p className="mt-1 line-clamp-2 text-[15px] leading-snug text-neutral-400">
-                {story.summary}
-              </p>
-            ) : null}
-          </Link>
+          <h2 className="mt-0.5 text-[17px] font-semibold leading-snug text-white">
+            {story.title}
+          </h2>
+          {story.summary ? (
+            <p className="mt-1 line-clamp-2 text-[15px] leading-snug text-neutral-400">
+              {story.summary}
+            </p>
+          ) : null}
 
           {story.image_url ? (
-            <Link href={detail} className="mt-3 block">
+            <div className="mt-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={story.image_url}
@@ -68,9 +69,10 @@ export function PostCard({ story, rank }: { story: Story; rank?: number }) {
                 loading="lazy"
                 className="aspect-[16/9] w-full rounded-2xl border border-[var(--line)] object-cover"
               />
-            </Link>
+            </div>
           ) : null}
 
+          {/* Raised above the overlay so its controls remain clickable. */}
           <PostActions
             storyId={story.id}
             title={story.title}

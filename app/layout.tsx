@@ -1,6 +1,13 @@
 import './globals.css';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { SideNav } from '@/components/layout/SideNav';
+
+export const viewport: Viewport = {
+  themeColor: '#000000',
+  // Let content extend into the notch/home-indicator so our fixed bars can pad
+  // themselves with env(safe-area-inset-*).
+  viewportFit: 'cover',
+};
 
 export const metadata: Metadata = {
   title: 'SPAWN — Gaming news as it happens',
@@ -36,8 +43,9 @@ export default function RootLayout({
         />
         <div className="mx-auto flex w-full max-w-[1290px]">
           <SideNav />
-          {/* Content area — pages lay out their own center feed + right rail. */}
-          <div className="min-w-0 flex-1 pt-14 pb-16 lg:pt-0 lg:pb-0">
+          {/* Content area — pages lay out their own center feed + right rail.
+              Top/bottom padding clears the fixed mobile bars incl. safe areas. */}
+          <div className="min-w-0 flex-1 pt-[calc(3.5rem_+_env(safe-area-inset-top))] pb-[calc(4rem_+_env(safe-area-inset-bottom))] lg:pt-0 lg:pb-0">
             {children}
           </div>
         </div>

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { ArrowLeft, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { Avatar } from '@base-ui-components/react/avatar';
 import { getClusterStories, getStoryById } from '@/lib/stories';
 import { incrementView } from '@/lib/redis';
@@ -9,6 +9,8 @@ import { categoryColor, timeAgo } from '@/lib/utils';
 import { AnalysisCards } from '@/components/story/AnalysisCards';
 import { SentimentBar } from '@/components/story/SentimentBar';
 import { SpawnDeeper } from '@/components/story/SpawnDeeper';
+import { BackButton } from '@/components/story/BackButton';
+import { PostActions } from '@/components/feed/PostActions';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,21 +42,15 @@ export default async function StoryDetailPage({ params }: { params: Params }) {
   return (
     <div className="flex justify-center">
       <main className="w-full max-w-[640px] border-x border-[var(--line)]">
-        <div className="sticky top-14 z-20 flex items-center gap-4 border-b border-[var(--line)] bg-black/80 px-4 py-3 backdrop-blur lg:top-0">
-          <Link
-            href="/"
-            aria-label="Back"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-neutral-200 transition-colors hover:bg-white/10"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
+        <div className="sticky top-[calc(3.5rem_+_env(safe-area-inset-top))] z-20 flex items-center gap-4 border-b border-[var(--line)] bg-[var(--header-bg)] px-4 py-3 backdrop-blur lg:top-0">
+          <BackButton />
           <h1 className="text-xl font-extrabold text-white">Story</h1>
         </div>
 
         <article className="flex flex-col gap-4 px-4 py-4">
-          <header className="flex flex-col gap-3">
+          <header className="flex flex-col gap-3 border-b border-[var(--line)] pb-4">
             <div className="flex items-center gap-2.5">
-              <Avatar.Root className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-[#16181c] ring-1 ring-white/10">
+              <Avatar.Root className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-[#16181c] ring-1 ring-white/10">
                 <Avatar.Image
                   src={favicon}
                   width={40}
@@ -110,6 +106,15 @@ export default async function StoryDetailPage({ params }: { params: Params }) {
               <ExternalLink className="h-4 w-4" />
               Read full story at {story.source_domain}
             </a>
+
+            {/* Focal action row — the destination stays as actionable as the card. */}
+            <PostActions
+              storyId={story.id}
+              title={story.title}
+              sourceUrl={story.url}
+              views={story.view_count}
+              focal
+            />
           </header>
 
           {story.ai_overview ? (
@@ -136,16 +141,16 @@ export default async function StoryDetailPage({ params }: { params: Params }) {
           ) : null}
 
           {cluster.length > 0 ? (
-            <section>
-              <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-[var(--accent)]">
+            <section className="overflow-hidden rounded-2xl bg-[#16181c] ring-1 ring-white/5">
+              <h3 className="px-4 pt-3 text-sm font-bold uppercase tracking-wide text-[var(--accent)]">
                 Also covering this
               </h3>
-              <ul className="flex flex-col gap-2">
+              <ul className="mt-1">
                 {cluster.map((s) => (
                   <li key={s.id}>
                     <Link
                       href={`/story/${s.id}`}
-                      className="flex items-center justify-between gap-3 rounded-xl bg-[#16181c] px-3 py-2 ring-1 ring-white/5 hover:ring-white/15"
+                      className="flex items-center justify-between gap-3 px-4 py-2.5 transition-colors hover:bg-white/[0.03]"
                     >
                       <span className="line-clamp-1 text-sm font-medium text-neutral-200">
                         {s.title}
