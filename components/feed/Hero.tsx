@@ -1,101 +1,110 @@
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
 import type { Story } from '@/types';
-import { cn, timeAgo } from '@/lib/utils';
+import { timeAgo } from '@/lib/utils';
 
-// GameVerse-style hero: full-bleed featured art with a glassy text panel bottom
-// -left, plus a floating "latest" list overlaid on the right (stacked below on
-// mobile).
-export function Hero({
-  featured,
-  side,
-}: {
-  featured: Story;
-  side: Story[];
-}) {
+function readMinutes(story: Story): number {
+  const words = (story.summary ?? story.title).split(/\s+/).length;
+  return Math.max(2, Math.round(words / 60));
+}
+
+// Editorial lead: full-bleed art with a kicker, a large serif headline, byline,
+// carousel dots, and a "NEXT" preview card — newspaper landing-page style.
+export function Hero({ featured, next }: { featured: Story; next?: Story }) {
   return (
-    <div className="relative mb-6">
-      <section className="relative h-[440px] overflow-hidden rounded-3xl ring-1 ring-white/5 sm:h-[480px]">
-        {featured.image_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={featured.image_url}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-        ) : (
-          <div className="absolute inset-0 bg-neutral-800" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-[#0a0a0c]/30 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0c]/70 to-transparent" />
+    <section className="relative h-[460px] overflow-hidden rounded-3xl ring-1 ring-white/10 sm:h-[520px]">
+      {featured.image_url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={featured.image_url}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : (
+        <div className="absolute inset-0 bg-neutral-900" />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a] via-[#0a0a0a]/70 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent" />
 
-        {/* Text panel */}
-        <div className="absolute bottom-5 left-5 right-5 max-w-md rounded-2xl bg-black/40 p-5 backdrop-blur-md sm:bottom-6 sm:left-6 lg:right-auto">
-          <h1 className="mb-2 line-clamp-2 text-xl font-semibold leading-snug text-white sm:text-2xl">
-            <Link href={`/story/${featured.id}`}>{featured.title}</Link>
-          </h1>
-          {featured.summary ? (
-            <p className="mb-4 line-clamp-2 text-sm text-neutral-300">
-              {featured.summary}
-            </p>
-          ) : null}
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-xs text-neutral-400">
-              {featured.source_domain} · {timeAgo(featured.published_at)} ago
-            </span>
-            <Link
-              href={`/story/${featured.id}`}
-              aria-label="Read featured story"
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#2f6bff] text-white transition hover:brightness-110"
-            >
-              <ArrowRight className="h-5 w-5" />
+      <div className="relative flex h-full flex-col justify-between p-6 sm:p-8">
+        <div className="max-w-xl">
+          <span className="kicker text-[11px] font-bold text-[var(--gold)]">
+            {featured.category}
+          </span>
+          <h1 className="mt-3 font-display text-4xl font-bold leading-[1.04] text-[var(--gold)] sm:text-5xl lg:text-6xl">
+            <Link href={`/story/${featured.id}`} className="hover:underline">
+              {featured.title}
             </Link>
+          </h1>
+
+          <p className="kicker mt-5 text-[11px] text-neutral-300">
+            {readMinutes(featured)} min read
+          </p>
+          <div className="mt-2 flex items-center gap-2.5">
+            <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-white/10 text-[11px] font-bold text-white ring-1 ring-white/15">
+              {featured.image_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={featured.image_url}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                featured.source_domain.slice(0, 1).toUpperCase()
+              )}
+            </span>
+            <span className="kicker text-[11px] text-neutral-300">
+              via {featured.source_domain} · {timeAgo(featured.published_at)} ago
+            </span>
+          </div>
+
+          <div className="mt-5 flex items-center gap-2">
+            {[1, 2, 3, 4].map((n) => (
+              <span
+                key={n}
+                className={
+                  n === 1
+                    ? 'flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-[11px] font-bold text-white ring-1 ring-white/20'
+                    : 'text-[11px] font-medium text-neutral-500'
+                }
+              >
+                {n}
+              </span>
+            ))}
           </div>
         </div>
-      </section>
 
-      {/* Latest list — overlaid on desktop, stacked on mobile */}
-      {side.length > 0 ? (
-        <div className="mt-3 flex flex-col gap-2 lg:absolute lg:right-5 lg:top-5 lg:mt-0 lg:w-[330px]">
-          {side.map((s, i) => (
+        {next ? (
+          <div>
+            <span className="kicker text-[11px] font-bold text-neutral-400">
+              Next
+            </span>
             <Link
-              key={s.id}
-              href={`/story/${s.id}`}
-              className={cn(
-                'flex gap-3 rounded-2xl p-2.5 ring-1 ring-white/5 backdrop-blur-md transition hover:ring-white/15',
-                i === 0
-                  ? 'border-l-2 border-[#2f6bff] bg-black/55'
-                  : 'bg-black/40 lg:bg-black/35',
-              )}
+              href={`/story/${next.id}`}
+              className="mt-2 flex max-w-md items-center gap-3 rounded-2xl bg-black/45 p-2.5 ring-1 ring-white/10 backdrop-blur-md transition hover:ring-white/25"
             >
-              <span className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-neutral-800">
-                {s.image_url ? (
+              <span className="h-12 w-16 shrink-0 overflow-hidden rounded-xl bg-neutral-800">
+                {next.image_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={s.image_url}
+                    src={next.image_url}
                     alt=""
                     loading="lazy"
                     className="h-full w-full object-cover"
                   />
                 ) : null}
               </span>
-              <div className="min-w-0 flex-1">
-                <h3 className="line-clamp-1 text-sm font-semibold text-white">
-                  {s.title}
-                </h3>
-                {s.summary ? (
-                  <p className="line-clamp-1 text-xs text-neutral-400">
-                    {s.summary}
-                  </p>
-                ) : null}
-                <p className="mt-0.5 text-[11px] text-neutral-500">
-                  {s.source_domain} · {timeAgo(s.published_at)} ago
-                </p>
-              </div>
+              <span className="min-w-0 flex-1">
+                <span className="line-clamp-2 font-display text-sm font-semibold text-white">
+                  {next.title}
+                </span>
+                <span className="kicker mt-1 block text-[10px] text-neutral-400">
+                  {readMinutes(next)} min read
+                </span>
+              </span>
             </Link>
-          ))}
-        </div>
-      ) : null}
-    </div>
+          </div>
+        ) : null}
+      </div>
+    </section>
   );
 }

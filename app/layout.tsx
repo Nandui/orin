@@ -2,6 +2,17 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { TopNav } from '@/components/layout/TopNav';
 
+// Edition dateline for the masthead — computed server-side so it never drifts
+// between server and client render.
+function editionDate(): string {
+  return new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
 export const metadata: Metadata = {
   title: 'SPAWN — Gaming news, ranked by the community',
   description:
@@ -31,15 +42,18 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600;1,700&family=UnifrakturCook:wght@700&display=swap"
           rel="stylesheet"
         />
-        <TopNav />
-        <main className="mx-auto max-w-[1320px] px-4 pb-16 pt-5 sm:px-6">
+        <TopNav today={editionDate()} />
+        <main className="mx-auto max-w-[1320px] px-4 pb-16 pt-6 sm:px-6">
           {children}
         </main>
-        <footer className="border-t border-white/5 py-8 text-center text-xs text-neutral-600">
-          SPAWN — gaming news, ranked by the community.
+        <footer className="mt-8 border-t border-white/10 py-8 text-center">
+          <p className="font-masthead text-2xl text-white">SPAWN</p>
+          <p className="kicker mt-1 text-[11px] text-neutral-600">
+            The Gaming Daily · News as it happens
+          </p>
         </footer>
       </body>
     </html>

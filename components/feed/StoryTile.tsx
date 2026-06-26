@@ -2,48 +2,40 @@ import Link from 'next/link';
 import type { Story } from '@/types';
 import { categoryColor, timeAgo } from '@/lib/utils';
 
-// "Popular Forums"-style tile for the 2-column grid.
+// Newspaper ledger row for the "Latest" grid: kicker, serif headline, dateline,
+// and a small thumbnail, separated by a hairline rule.
 export function StoryTile({ story }: { story: Story }) {
-  const color = categoryColor(story.category);
-  const age = timeAgo(story.published_at);
   return (
     <Link
       href={`/story/${story.id}`}
-      className="flex items-center gap-3 rounded-2xl bg-[#141417] p-3 ring-1 ring-white/5 transition hover:ring-white/15"
+      className="group flex items-start gap-4 border-b border-white/10 py-4"
     >
-      <span
-        className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl text-sm font-bold"
-        style={{ backgroundColor: `${color}22`, color }}
-      >
+      <div className="min-w-0 flex-1">
+        <span
+          className="kicker text-[10px] font-bold"
+          style={{ color: categoryColor(story.category) }}
+        >
+          {story.category}
+        </span>
+        <h3 className="mt-1 line-clamp-2 font-display text-lg font-semibold leading-snug text-white group-hover:text-[var(--gold)]">
+          {story.title}
+        </h3>
+        <p className="kicker mt-1.5 text-[10px] text-neutral-500">
+          {story.source_domain} · {timeAgo(story.published_at)} ago
+        </p>
+      </div>
+
+      <span className="h-16 w-24 shrink-0 overflow-hidden rounded-xl bg-neutral-800">
         {story.image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={story.image_url}
             alt=""
             loading="lazy"
-            className="h-full w-full object-cover"
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
-        ) : (
-          story.category.slice(0, 1)
-        )}
+        ) : null}
       </span>
-
-      <div className="min-w-0 flex-1">
-        <h3 className="truncate text-sm font-semibold text-white">
-          {story.title}
-        </h3>
-        <div className="mt-0.5 flex items-center gap-1.5 text-xs text-neutral-500">
-          <span style={{ color }}>{story.category}</span>
-          <span aria-hidden>·</span>
-          <span className="truncate">{story.source_domain}</span>
-        </div>
-      </div>
-
-      {age ? (
-        <span className="shrink-0 rounded-full bg-white/5 px-2 py-0.5 text-[11px] font-semibold text-neutral-300">
-          {age}
-        </span>
-      ) : null}
     </Link>
   );
 }

@@ -16,9 +16,9 @@ export default async function EsportsPage() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <div className="mb-5 flex items-center gap-2">
-        <Gamepad2 className="h-5 w-5 text-[#2f6bff]" />
-        <h1 className="text-2xl font-bold text-white">Esports</h1>
+      <div className="mb-5 flex items-center gap-2 border-b-2 border-white/15 pb-3">
+        <Gamepad2 className="h-5 w-5 text-[var(--gold)]" />
+        <h1 className="font-display text-3xl font-bold text-white">Esports</h1>
       </div>
       <StoryList stories={stories} />
     </div>

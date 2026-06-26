@@ -33,15 +33,15 @@ export function FeedControls({
 }) {
   return (
     <div className="mb-4 flex flex-col gap-3">
-      <div className="flex items-center gap-1.5 rounded-full bg-[#141417] p-1 ring-1 ring-white/5 sm:w-fit">
+      <div className="flex items-center gap-1.5 rounded-full bg-[#141414] p-1 ring-1 ring-white/5 sm:w-fit">
         {SORTS.map((s) => (
           <Link
             key={s.value}
             href={buildHref({ sort: s.value, category, q })}
             className={cn(
-              'flex-1 rounded-full px-4 py-1.5 text-center text-sm font-semibold transition-colors sm:flex-none',
+              'kicker flex-1 rounded-full px-4 py-1.5 text-center text-xs font-bold transition-colors sm:flex-none',
               sort === s.value
-                ? 'bg-[#2f6bff] text-white'
+                ? 'bg-[var(--gold)] text-black'
                 : 'text-neutral-400 hover:text-white',
             )}
           >

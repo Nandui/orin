@@ -17,11 +17,11 @@ export function StoryCard({
 }) {
   return (
     <article className="group flex items-center gap-3 rounded-2xl p-2.5 transition-colors hover:bg-[#141417] sm:gap-4 sm:p-3">
-      <div className="flex w-7 shrink-0 flex-col items-center pt-0.5">
+      <div className="flex w-8 shrink-0 flex-col items-center pt-0.5">
         <span
           className={cn(
-            'text-xl font-bold tabular-nums',
-            rank === 1 ? 'text-[#2f6bff]' : 'text-neutral-500',
+            'font-display text-2xl font-bold tabular-nums',
+            rank === 1 ? 'text-[var(--gold)]' : 'text-neutral-500',
           )}
         >
           {rank}
@@ -45,8 +45,8 @@ export function StoryCard({
       </Link>
 
       <div className="min-w-0 flex-1">
-        <h3 className="mb-1 truncate text-[15px] font-semibold text-neutral-100">
-          <Link href={`/story/${story.id}`} className="hover:text-white">
+        <h3 className="mb-1 truncate font-display text-lg font-semibold text-neutral-100">
+          <Link href={`/story/${story.id}`} className="hover:text-[var(--gold)]">
             {story.title}
           </Link>
         </h3>
