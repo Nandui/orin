@@ -12,16 +12,46 @@ export interface SourceSeed {
 }
 
 export const SEED_SOURCES: SourceSeed[] = [
+  // Major multi-platform outlets
   { name: 'IGN', url: 'https://feeds.feedburner.com/ign/all', category: 'Industry', homepage: 'ign.com' },
   { name: 'Eurogamer', url: 'https://www.eurogamer.net/feed', category: 'Industry', homepage: 'eurogamer.net' },
   { name: 'PC Gamer', url: 'https://www.pcgamer.com/rss/', category: 'Industry', homepage: 'pcgamer.com' },
   { name: 'Rock Paper Shotgun', url: 'https://www.rockpapershotgun.com/feed', category: 'Indie', homepage: 'rockpapershotgun.com' },
   { name: 'Kotaku', url: 'https://kotaku.com/rss', category: 'Industry', homepage: 'kotaku.com' },
   { name: 'Polygon', url: 'https://www.polygon.com/rss/index.xml', category: 'Industry', homepage: 'polygon.com' },
-  { name: 'Gamespot', url: 'https://www.gamespot.com/feeds/news/', category: 'Industry', homepage: 'gamespot.com' },
+  { name: 'GameSpot', url: 'https://www.gamespot.com/feeds/news/', category: 'Industry', homepage: 'gamespot.com' },
+  { name: 'VG247', url: 'https://www.vg247.com/feed', category: 'Industry', homepage: 'vg247.com' },
+  { name: 'GamesRadar+', url: 'https://www.gamesradar.com/rss/', category: 'Industry', homepage: 'gamesradar.com' },
+  { name: 'Video Games Chronicle', url: 'https://www.videogameschronicle.com/feed/', category: 'Industry', homepage: 'videogameschronicle.com' },
+  { name: 'The Verge — Games', url: 'https://www.theverge.com/games/rss/index.xml', category: 'Industry', homepage: 'theverge.com' },
+  { name: 'Destructoid', url: 'https://www.destructoid.com/feed/', category: 'Industry', homepage: 'destructoid.com' },
+  { name: 'TheGamer', url: 'https://www.thegamer.com/feed/', category: 'Industry', homepage: 'thegamer.com' },
+  { name: 'GamingBolt', url: 'https://gamingbolt.com/feed', category: 'Industry', homepage: 'gamingbolt.com' },
+  { name: 'Insider Gaming', url: 'https://insider-gaming.com/feed/', category: 'Industry', homepage: 'insider-gaming.com' },
+
+  // Platform / first-party
+  { name: 'PlayStation Blog', url: 'https://blog.playstation.com/feed/', category: 'Industry', homepage: 'blog.playstation.com' },
+  { name: 'Xbox Wire', url: 'https://news.xbox.com/en-us/feed/', category: 'Industry', homepage: 'news.xbox.com' },
+  { name: 'Nintendo Life', url: 'https://www.nintendolife.com/feeds/latest', category: 'Industry', homepage: 'nintendolife.com' },
+  { name: 'Push Square', url: 'https://www.pushsquare.com/feeds/latest', category: 'Industry', homepage: 'pushsquare.com' },
+  { name: 'Pure Xbox', url: 'https://www.purexbox.com/feeds/latest', category: 'Industry', homepage: 'purexbox.com' },
+
+  // PC / patches / performance
+  { name: 'PCGamesN', url: 'https://www.pcgamesn.com/mainrss.xml', category: 'Industry', homepage: 'pcgamesn.com' },
+  { name: 'DSOGaming', url: 'https://www.dsogaming.com/feed/', category: 'Industry', homepage: 'dsogaming.com' },
+
+  // Japanese / RPG
+  { name: 'Gematsu', url: 'https://www.gematsu.com/feed', category: 'RPG', homepage: 'gematsu.com' },
+  { name: 'Siliconera', url: 'https://www.siliconera.com/feed/', category: 'RPG', homepage: 'siliconera.com' },
+
+  // Hardware
+  { name: "Tom's Hardware", url: 'https://www.tomshardware.com/feeds/all', category: 'Hardware', homepage: 'tomshardware.com' },
+  { name: 'Wccftech', url: 'https://wccftech.com/feed/', category: 'Hardware', homepage: 'wccftech.com' },
+
+  // Esports
   { name: 'HLTV', url: 'https://www.hltv.org/rss/news', category: 'Esports', homepage: 'hltv.org' },
   { name: 'Dot Esports', url: 'https://dotesports.com/feed', category: 'Esports', homepage: 'dotesports.com' },
-  { name: "Tom's Hardware", url: 'https://www.tomshardware.com/feeds/all', category: 'Hardware', homepage: 'tomshardware.com' },
+  { name: 'Dexerto', url: 'https://www.dexerto.com/feed/', category: 'Esports', homepage: 'dexerto.com' },
 ];
 
 export interface ParsedItem {

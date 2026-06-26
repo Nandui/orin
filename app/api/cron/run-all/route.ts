@@ -3,7 +3,6 @@ import {
   runAnalyze,
   runCleanupAds,
   runCluster,
-  runEngagement,
   runIngest,
   runRank,
 } from '@/lib/pipeline';
@@ -36,7 +35,6 @@ export async function GET(req: Request) {
     cleanupAds: await runCleanupAds(),
     ingest: await runIngest(),
     cluster: await runCluster(),
-    engagement: await runEngagement(),
     analyze: await runAnalyze(),
     rank: await runRank(),
   };
@@ -44,7 +42,7 @@ export async function GET(req: Request) {
   console.log('[cron/run-all] results', JSON.stringify(results));
   return json({
     ok: true,
-    ran: ['cleanupAds', 'ingest', 'cluster', 'engagement', 'analyze', 'rank'],
+    ran: ['cleanupAds', 'ingest', 'cluster', 'analyze', 'rank'],
     results,
   });
 }

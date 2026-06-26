@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { ArrowBigUp, ArrowLeft, ExternalLink, MessageSquare } from 'lucide-react';
+import { ArrowLeft, ExternalLink } from 'lucide-react';
 import { getClusterStories, getStoryById } from '@/lib/stories';
 import { incrementView } from '@/lib/redis';
-import { formatCount, timeAgo } from '@/lib/utils';
+import { timeAgo } from '@/lib/utils';
 import { CategoryPill } from '@/components/ui/CategoryPill';
 import { AnalysisCards } from '@/components/story/AnalysisCards';
 import { SentimentBar } from '@/components/story/SentimentBar';
@@ -77,42 +77,14 @@ export default async function StoryDetailPage({ params }: { params: Params }) {
         ) : null}
 
         <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-400">
-          <span className="flex items-center gap-1.5 font-semibold text-[#2f6bff]">
-            <ArrowBigUp className="h-5 w-5" />
-            {formatCount(story.like_count)} upvotes
-          </span>
-          {story.discussion_url ? (
-            <a
-              href={story.discussion_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 hover:text-white"
-            >
-              <MessageSquare className="h-4 w-4" />
-              <span className="font-semibold text-neutral-200">
-                {formatCount(story.comment_count)}
-              </span>
-              comments
-              <span className="text-xs text-neutral-600">on Reddit</span>
-              <ExternalLink className="h-3.5 w-3.5" />
-            </a>
-          ) : (
-            <span className="flex items-center gap-1.5">
-              <MessageSquare className="h-4 w-4" />
-              <span className="font-semibold text-neutral-200">
-                {formatCount(story.comment_count)}
-              </span>
-              comments
-            </span>
-          )}
           <a
             href={story.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="ml-auto flex items-center gap-1.5 rounded-full bg-[#2f6bff] px-4 py-2 text-sm font-semibold text-white hover:brightness-110"
+            className="flex items-center gap-1.5 rounded-full bg-[#2f6bff] px-4 py-2 text-sm font-semibold text-white hover:brightness-110"
           >
             <ExternalLink className="h-4 w-4" />
-            Read source
+            Read full story at {story.source_domain}
           </a>
         </div>
       </header>
@@ -164,31 +136,6 @@ export default async function StoryDetailPage({ params }: { params: Params }) {
       ) : null}
 
       <SpawnDeeper />
-
-      <section id="comments" className="scroll-mt-20">
-        <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-neutral-400">
-          Discussion
-        </h2>
-        {story.discussion_url ? (
-          <a
-            href={story.discussion_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-between gap-3 rounded-2xl bg-[#141417] p-4 ring-1 ring-white/5 hover:ring-white/15"
-          >
-            <span className="flex items-center gap-2 text-sm font-medium text-neutral-200">
-              <MessageSquare className="h-4 w-4 text-[#2f6bff]" />
-              Join the discussion on Reddit — {formatCount(story.comment_count)}{' '}
-              comments
-            </span>
-            <ExternalLink className="h-4 w-4 text-neutral-500" />
-          </a>
-        ) : (
-          <div className="rounded-2xl bg-[#141417] p-6 text-center text-sm text-neutral-500 ring-1 ring-white/5">
-            No discussion thread found for this story yet.
-          </div>
-        )}
-      </section>
     </div>
   );
 }

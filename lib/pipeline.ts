@@ -68,27 +68,45 @@ export async function runIngest(): Promise<StageResult> {
       : SEED_SOURCES.map((s) => ({ id: null, url: s.url, category: s.category }));
 
   let inserted = 0;
+
+  // Fetch every feed concurrently — sequential crawling of 29 sources would blow
+  // past the function time limit. fetchFeed never throws (returns [] on error).
+  const fetched = await Promise.all(
+    sources.map(async (source) => ({
+      source,
+      items: await fetchFeed(source.url, source.category),
+    })),
+  );
+
+  // Flatten to rows, de-duped by URL (the same story is often syndicated across
+  // feeds), so a single batched upsert handles the whole crawl.
+  const seen = new Set<string>();
+  const rows: Array<Record<string, unknown>> = [];
   const crawledIds: string[] = [];
-
-  for (const source of sources) {
-    const items = await fetchFeed(source.url, source.category);
+  for (const { source, items } of fetched) {
     if (source.id) crawledIds.push(source.id);
-    if (!items.length) continue;
+    for (const item of items) {
+      if (seen.has(item.url)) continue;
+      seen.add(item.url);
+      rows.push({
+        source_id: source.id,
+        title: item.title,
+        url: item.url,
+        source_domain: item.source_domain,
+        summary: item.summary,
+        image_url: item.image_url,
+        category: detectCategory(item.title, source.category),
+        published_at: item.published_at,
+      });
+    }
+  }
 
-    const rows = items.map((item) => ({
-      source_id: source.id,
-      title: item.title,
-      url: item.url,
-      source_domain: item.source_domain,
-      summary: item.summary,
-      image_url: item.image_url,
-      category: detectCategory(item.title, source.category),
-      published_at: item.published_at,
-    }));
-
+  // Upsert in chunks (ignore existing URLs); enqueue only the genuinely new rows.
+  for (let i = 0; i < rows.length; i += 500) {
+    const chunk = rows.slice(i, i + 500);
     const { data: newRows, error } = await supabase
       .from('stories')
-      .upsert(rows, { onConflict: 'url', ignoreDuplicates: true })
+      .upsert(chunk, { onConflict: 'url', ignoreDuplicates: true })
       .select('id');
 
     if (!error && newRows) {

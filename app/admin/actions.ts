@@ -4,7 +4,6 @@ import {
   runAnalyze,
   runCleanupAds,
   runCluster,
-  runEngagement,
   runIngest,
   runRank,
 } from '@/lib/pipeline';
@@ -15,7 +14,6 @@ export type RefreshResult = {
   removed: number;
   ingested: number;
   analyzed: number;
-  matched: number;
   error?: string;
 };
 
@@ -27,7 +25,6 @@ export async function refreshFeed(): Promise<RefreshResult> {
     const cleanup = await runCleanupAds();
     const ingest = await runIngest();
     await runCluster();
-    const engagement = await runEngagement();
     const analyze = await runAnalyze();
     await runRank();
 
@@ -39,7 +36,6 @@ export async function refreshFeed(): Promise<RefreshResult> {
       removed: Number((cleanup as { removed?: number }).removed ?? 0),
       ingested: Number((ingest as { inserted?: number }).inserted ?? 0),
       analyzed: Number((analyze as { analyzed?: number }).analyzed ?? 0),
-      matched: Number((engagement as { matched?: number }).matched ?? 0),
     };
   } catch (err) {
     return {
@@ -47,7 +43,6 @@ export async function refreshFeed(): Promise<RefreshResult> {
       removed: 0,
       ingested: 0,
       analyzed: 0,
-      matched: 0,
       error: err instanceof Error ? err.message : 'Unknown error',
     };
   }

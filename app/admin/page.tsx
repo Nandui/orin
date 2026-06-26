@@ -18,9 +18,9 @@ export default function AdminPage() {
         <h1 className="text-2xl font-bold text-white">Admin</h1>
       </div>
       <p className="mb-6 text-sm text-neutral-400">
-        Pull the latest news on demand. This runs the same pipeline as the daily
-        job — it removes ad / sponsored posts, ingests fresh stories, pulls the
-        Reddit discussion stats, and runs the AI analysis.
+        Pull the latest news on demand. This runs the same pipeline as the
+        scheduled job — it crawls every source, removes ad / sponsored posts,
+        clusters duplicates, and runs the AI analysis.
       </p>
 
       <RefreshButton />

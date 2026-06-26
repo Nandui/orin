@@ -3,7 +3,7 @@ import { ArrowRight } from 'lucide-react';
 import type { Category, StorySort } from '@/types';
 import { CATEGORIES } from '@/types';
 import { getRising, getStories } from '@/lib/stories';
-import { categoryColor, formatCount } from '@/lib/utils';
+import { categoryColor, timeAgo } from '@/lib/utils';
 import { Hero } from '@/components/feed/Hero';
 import { StoryTile } from '@/components/feed/StoryTile';
 import { Panel } from '@/components/feed/Panel';
@@ -65,9 +65,7 @@ export default async function FeedPage({
   const featured = stories[0];
   const side = stories.slice(1, 5);
   const popular = stories.slice(5, 13);
-  const hot = [...stories]
-    .sort((a, b) => b.comment_count - a.comment_count)
-    .slice(0, 4);
+  const hot = [...stories].sort((a, b) => b.score - a.score).slice(0, 4);
 
   return (
     <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
@@ -114,7 +112,7 @@ export default async function FeedPage({
                     {s.title}
                   </Link>
                   <p className="text-xs text-neutral-500">
-                    {s.source_domain} · {formatCount(s.like_count)} upvotes
+                    {s.source_domain} · {timeAgo(s.published_at)} ago
                   </p>
                 </div>
                 <Link
@@ -153,7 +151,7 @@ export default async function FeedPage({
           ))}
         </Panel>
 
-        <Panel title="Hot on Reddit">
+        <Panel title="Trending now">
           {hot.map((s) => (
             <div key={s.id} className="flex items-center gap-3">
               <Avatar story={s} live />
@@ -166,26 +164,15 @@ export default async function FeedPage({
                 </Link>
                 <p className="flex items-center gap-1.5 text-xs text-[#ef4444]">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#ef4444]" />
-                  {formatCount(s.comment_count)} comments
+                  {s.source_domain} · {timeAgo(s.published_at)} ago
                 </p>
               </div>
-              {s.discussion_url ? (
-                <a
-                  href={s.discussion_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-semibold text-[#4d83ff] ring-1 ring-[#2f6bff]/40 hover:bg-[#2f6bff]/10"
-                >
-                  DISCUSS
-                </a>
-              ) : (
-                <Link
-                  href={`/story/${s.id}`}
-                  className="shrink-0 text-xs font-semibold text-[#4d83ff]"
-                >
-                  VIEW
-                </Link>
-              )}
+              <Link
+                href={`/story/${s.id}`}
+                className="shrink-0 text-xs font-semibold text-[#4d83ff]"
+              >
+                VIEW
+              </Link>
             </div>
           ))}
         </Panel>

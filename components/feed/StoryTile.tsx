@@ -1,11 +1,11 @@
 import Link from 'next/link';
-import { ArrowBigUp } from 'lucide-react';
 import type { Story } from '@/types';
-import { categoryColor, formatCount } from '@/lib/utils';
+import { categoryColor, timeAgo } from '@/lib/utils';
 
 // "Popular Forums"-style tile for the 2-column grid.
 export function StoryTile({ story }: { story: Story }) {
   const color = categoryColor(story.category);
+  const age = timeAgo(story.published_at);
   return (
     <Link
       href={`/story/${story.id}`}
@@ -39,15 +39,11 @@ export function StoryTile({ story }: { story: Story }) {
         </div>
       </div>
 
-      <div className="flex shrink-0 flex-col items-end gap-1">
-        <span className="flex items-center gap-1 rounded-full bg-white/5 px-2 py-0.5 text-[11px] font-semibold text-neutral-200">
-          <ArrowBigUp className="h-3.5 w-3.5 text-[#2f6bff]" />
-          {formatCount(story.like_count)}
+      {age ? (
+        <span className="shrink-0 rounded-full bg-white/5 px-2 py-0.5 text-[11px] font-semibold text-neutral-300">
+          {age}
         </span>
-        <span className="text-[11px] text-neutral-500">
-          {formatCount(story.comment_count)} comments
-        </span>
-      </div>
+      ) : null}
     </Link>
   );
 }

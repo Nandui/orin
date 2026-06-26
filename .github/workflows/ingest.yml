@@ -1,0 +1,43 @@
+name: Ingest gaming news
+
+# Keeps SPAWN "as it happens" fresh. Vercel's Hobby plan caps cron jobs at once
+# per day, so instead we ping the in-process pipeline from GitHub on a short
+# schedule. GitHub's shortest cron is 5 min (and may be delayed under load).
+#
+# Required repo secrets (Settings -> Secrets and variables -> Actions):
+#   SPAWN_URL   e.g. https://orin-leisureworld.vercel.app   (no trailing slash)
+#   CRON_SECRET must match the CRON_SECRET env var set in Vercel
+# Optional (only if Vercel Deployment Protection is left ON):
+#   VERCEL_PROTECTION_BYPASS  the "Protection Bypass for Automation" secret
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch: {} # lets you trigger a run by hand from the Actions tab
+
+# Don't pile up runs if one is slow.
+concurrency:
+  group: ingest
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger ingestion pipeline
+        env:
+          SPAWN_URL: ${{ secrets.SPAWN_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          BYPASS: ${{ secrets.VERCEL_PROTECTION_BYPASS }}
+        run: |
+          if [ -z "$SPAWN_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "Missing SPAWN_URL or CRON_SECRET repo secret." >&2
+            exit 1
+          fi
+          HEADERS=()
+          if [ -n "$BYPASS" ]; then
+            HEADERS=(-H "x-vercel-protection-bypass: $BYPASS")
+          fi
+          curl -fsS --max-time 120 "${HEADERS[@]}" \
+            "$SPAWN_URL/api/cron/run-all?key=$CRON_SECRET" \
+            -o /dev/null -w "run-all -> HTTP %{http_code}\n"

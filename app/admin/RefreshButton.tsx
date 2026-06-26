@@ -33,8 +33,8 @@ export function RefreshButton() {
 
       {pending ? (
         <p className="text-xs text-neutral-500">
-          Pulling fresh stories, removing ads, fetching Reddit discussion stats and
-          running AI analysis. This can take up to a minute — keep this tab open.
+          Crawling every source, removing ads, clustering and running AI analysis.
+          This can take up to a minute — keep this tab open.
         </p>
       ) : null}
 
@@ -49,10 +49,6 @@ export function RefreshButton() {
               <li>
                 <span className="text-neutral-500">New stories added:</span>{' '}
                 {result.ingested}
-              </li>
-              <li>
-                <span className="text-neutral-500">Reddit threads matched:</span>{' '}
-                {result.matched}
               </li>
               <li>
                 <span className="text-neutral-500">Stories analyzed:</span>{' '}

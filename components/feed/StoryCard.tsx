@@ -1,12 +1,11 @@
 import Link from 'next/link';
-import { ArrowBigUp, ExternalLink, MessageSquare } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import type { Story } from '@/types';
-import { cn, formatCount } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { CategoryPill } from '@/components/ui/CategoryPill';
 import { RankDelta } from '@/components/ui/RankDelta';
 
-// Ranked list row. Engagement (▲ upvotes / comments) comes from the original
-// Reddit thread, Digg-style.
+// Ranked list row for a news feed: rank, art, headline, and source/time meta.
 export function StoryCard({
   story,
   rank,
@@ -16,8 +15,6 @@ export function StoryCard({
   rank: number;
   timeLabel: string;
 }) {
-  const hasThread = Boolean(story.discussion_url);
-
   return (
     <article className="group flex items-center gap-3 rounded-2xl p-2.5 transition-colors hover:bg-[#141417] sm:gap-4 sm:p-3">
       <div className="flex w-7 shrink-0 flex-col items-center pt-0.5">
@@ -54,39 +51,13 @@ export function StoryCard({
           </Link>
         </h3>
 
-        <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-neutral-500">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-500">
           <CategoryPill category={story.category} />
           <span className="font-medium text-neutral-400">
             {story.source_domain}
           </span>
           <span aria-hidden>·</span>
           <span>{timeLabel}</span>
-        </div>
-
-        <div className="flex items-center gap-3 text-xs">
-          <span className="flex items-center gap-1 font-semibold text-[#2f6bff]">
-            <ArrowBigUp className="h-4 w-4" />
-            {formatCount(story.like_count)}
-          </span>
-
-          {hasThread ? (
-            <a
-              href={story.discussion_url!}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 font-medium text-neutral-400 transition-colors hover:text-white"
-            >
-              <MessageSquare className="h-3.5 w-3.5" />
-              {formatCount(story.comment_count)}
-              <span className="text-neutral-600">·</span>
-              <span className="text-[#4d83ff]">Discussion</span>
-            </a>
-          ) : (
-            <span className="flex items-center gap-1 font-medium text-neutral-500">
-              <MessageSquare className="h-3.5 w-3.5" />
-              {formatCount(story.comment_count)}
-            </span>
-          )}
 
           <a
             href={story.url}
