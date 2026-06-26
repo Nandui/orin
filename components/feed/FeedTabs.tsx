@@ -39,10 +39,10 @@ export function FeedTabs({
           <Tabs.Tab
             key={t.value}
             value={t.value}
-            className="group relative flex-1 cursor-pointer px-4 py-3.5 text-[15px] font-semibold text-neutral-500 outline-none transition-colors hover:bg-white/[0.03] data-[selected]:text-white"
+            className="group relative flex-1 cursor-pointer px-4 py-3.5 text-[15px] font-semibold text-neutral-500 outline-none transition-colors hover:bg-white/[0.03] aria-selected:text-white"
           >
             {t.label}
-            <span className="absolute inset-x-0 bottom-0 mx-auto hidden h-1 w-14 rounded-full bg-[var(--accent)] group-data-[selected]:block" />
+            <span className="absolute inset-x-0 bottom-0 mx-auto hidden h-1 w-14 rounded-full bg-[var(--accent)] group-aria-selected:block" />
           </Tabs.Tab>
         ))}
       </Tabs.List>

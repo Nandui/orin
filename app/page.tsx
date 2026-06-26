@@ -1,10 +1,12 @@
-import type { Category, StorySort } from '@/types';
+import { Fragment } from 'react';
+import type { Category, Story, StorySort } from '@/types';
 import { CATEGORIES } from '@/types';
 import { getRising, getStories } from '@/lib/stories';
 import { PostCard } from '@/components/feed/PostCard';
 import { FeedTabs } from '@/components/feed/FeedTabs';
 import { FeedControls } from '@/components/feed/FeedControls';
 import { RightRail } from '@/components/feed/RightRail';
+import { AdSlot } from '@/components/layout/AdSlot';
 
 export const dynamic = 'force-dynamic';
 
@@ -75,7 +77,7 @@ function FeedHeader({ title, subtitle }: { title: string; subtitle: string }) {
   );
 }
 
-function Feed({ stories, ranked }: { stories: import('@/types').Story[]; ranked: boolean }) {
+function Feed({ stories, ranked }: { stories: Story[]; ranked: boolean }) {
   if (stories.length === 0) {
     return (
       <div className="px-4 py-16 text-center">
@@ -89,7 +91,11 @@ function Feed({ stories, ranked }: { stories: import('@/types').Story[]; ranked:
   return (
     <div>
       {stories.map((s, i) => (
-        <PostCard key={s.id} story={s} rank={ranked ? i + 1 : undefined} />
+        <Fragment key={s.id}>
+          <PostCard story={s} rank={ranked ? i + 1 : undefined} />
+          {/* One in-feed sponsored slot, promoted-post style. */}
+          {i === 4 ? <AdSlot slot="feed-inline" /> : null}
+        </Fragment>
       ))}
     </div>
   );

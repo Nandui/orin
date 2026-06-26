@@ -3,6 +3,7 @@ import { Search, TrendingUp } from 'lucide-react';
 import type { Story } from '@/types';
 import { CATEGORIES } from '@/types';
 import { categoryColor, timeAgo } from '@/lib/utils';
+import { AdSlot } from '@/components/layout/AdSlot';
 
 const UPCOMING = [
   { title: 'GTA VI', when: 'Q4 2026' },
@@ -80,7 +81,7 @@ export function RightRail({ trending }: { trending: Story[] }) {
         </div>
       </section>
 
-      <section className="rounded-2xl bg-[#16181c] p-4">
+      <section className="mb-4 rounded-2xl bg-[#16181c] p-4">
         <h2 className="mb-2 text-lg font-extrabold text-white">Upcoming</h2>
         <ul className="flex flex-col gap-2">
           {UPCOMING.map((r) => (
@@ -96,6 +97,8 @@ export function RightRail({ trending }: { trending: Story[] }) {
           ))}
         </ul>
       </section>
+
+      <AdSlot slot="sidebar" />
     </aside>
   );
 }
