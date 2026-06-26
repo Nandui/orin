@@ -1,28 +1,17 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { TopNav } from '@/components/layout/TopNav';
-
-// Edition dateline for the masthead — computed server-side so it never drifts
-// between server and client render.
-function editionDate(): string {
-  return new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-}
+import { SideNav } from '@/components/layout/SideNav';
 
 export const metadata: Metadata = {
-  title: 'SPAWN — Gaming news, ranked by the community',
+  title: 'SPAWN — Gaming news as it happens',
   description:
-    'A gaming-specific news aggregator. Crawls top outlets, clusters stories, and ranks them by a decay-weighted engagement score.',
+    'A gaming-specific news feed. Crawls top outlets, clusters stories, and surfaces the latest as it happens.',
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000',
   ),
   openGraph: {
-    title: 'SPAWN /Gaming',
-    description: 'Gaming news, ranked by the community.',
+    title: 'SPAWN',
+    description: 'Gaming news as it happens.',
     siteName: 'SPAWN',
   },
 };
@@ -42,19 +31,16 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600;1,700&family=UnifrakturCook:wght@700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
           rel="stylesheet"
         />
-        <TopNav today={editionDate()} />
-        <main className="mx-auto max-w-[1320px] px-4 pb-16 pt-6 sm:px-6">
-          {children}
-        </main>
-        <footer className="mt-8 border-t border-white/10 py-8 text-center">
-          <p className="font-masthead text-2xl text-white">SPAWN</p>
-          <p className="kicker mt-1 text-[11px] text-neutral-600">
-            The Gaming Daily · News as it happens
-          </p>
-        </footer>
+        <div className="mx-auto flex w-full max-w-[1290px]">
+          <SideNav />
+          {/* Content area — pages lay out their own center feed + right rail. */}
+          <div className="min-w-0 flex-1 pt-14 pb-16 lg:pt-0 lg:pb-0">
+            {children}
+          </div>
+        </div>
       </body>
     </html>
   );

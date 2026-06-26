@@ -5,8 +5,8 @@ export function SentimentBar({ sentiment }: { sentiment: Sentiment }) {
   const neg = Math.max(0, Math.min(100, sentiment.neg));
 
   return (
-    <section className="rounded-2xl bg-[#141414] p-4 ring-1 ring-white/5">
-      <h2 className="kicker mb-3 border-b border-[#f0c24c]/40 pb-2 text-xs font-bold text-[var(--gold)]">
+    <section className="rounded-2xl bg-[#16181c] p-4 ring-1 ring-white/5">
+      <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-[var(--accent)]">
         Community Sentiment
       </h2>
       <div className="mb-2 flex h-2.5 w-full overflow-hidden rounded-full bg-neutral-800">

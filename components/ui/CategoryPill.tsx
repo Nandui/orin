@@ -5,8 +5,8 @@ export function CategoryPill({ category }: { category: Category }) {
   const color = categoryColor(category);
   return (
     <span
-      className="kicker inline-flex items-center text-[10px] font-bold"
-      style={{ color }}
+      className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide"
+      style={{ backgroundColor: `${color}1f`, color }}
     >
       {category}
     </span>
