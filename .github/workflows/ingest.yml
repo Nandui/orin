@@ -11,9 +11,13 @@ name: Ingest gaming news
 #   VERCEL_PROTECTION_BYPASS  the "Protection Bypass for Automation" secret
 
 on:
-  schedule:
-    - cron: '*/10 * * * *'
-  workflow_dispatch: {} # lets you trigger a run by hand from the Actions tab
+  # Scheduled ingestion is PAUSED until the secrets above are configured (it was
+  # failing every run without them). Re-enable by uncommenting the schedule.
+  # GitHub also heavily throttles `schedule`; for true minutes-fresh ingestion a
+  # dedicated pinger (e.g. cron-job.org) hitting /api/cron/run-all is more reliable.
+  # schedule:
+  #   - cron: '*/10 * * * *'
+  workflow_dispatch: {} # run manually from the Actions tab
 
 # Don't pile up runs if one is slow.
 concurrency:
